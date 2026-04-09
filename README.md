@@ -1,0 +1,1 @@
+# chorva-boshqaruv
