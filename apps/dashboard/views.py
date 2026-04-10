@@ -11,7 +11,7 @@ from django.utils import timezone
 from apps.accounts.models import UserRole
 
 from .forms import FinanceEntryForm, MilkPriceForm, MilkRecordForm, WorkerAdvanceForm, WorkerForm
-from .models import AccountSourceChoices, FinanceEntry, MilkRecord, Worker, WorkerAdvance
+from .models import AccountSourceChoices, FinanceEntry, FinanceStatusChoices, MilkRecord, Worker, WorkerAdvance
 from .selectors import (
     filter_finance_entries,
     filter_worker_payments,
@@ -125,7 +125,7 @@ def milk_page(request):
         "date_to": date_to,
         "milk_form": MilkRecordForm(initial={"record_date": today}),
         "milk_price_form": MilkPriceForm(initial={"effective_from": today}),
-        "milk_page_obj": Paginator(milk_records, 12).get_page(request.GET.get("page")),
+        "milk_page_obj": Paginator(milk_records, 10).get_page(request.GET.get("page")),
         "pending_page_obj": Paginator(stats["pending_milk_entries"], 8).get_page(request.GET.get("pending_page")),
         "current_month_total": sum(
             item.total_liters for item in MilkRecord.objects.filter(record_date__year=today.year, record_date__month=today.month)
@@ -179,7 +179,7 @@ def milk_edit(request, pk):
         "date_to": today,
         "milk_form": form,
         "milk_price_form": MilkPriceForm(initial={"effective_from": today}),
-        "milk_page_obj": Paginator(milk_records, 12).get_page(request.GET.get("page")),
+        "milk_page_obj": Paginator(milk_records, 10).get_page(request.GET.get("page")),
         "pending_page_obj": Paginator(stats["pending_milk_entries"], 8).get_page(request.GET.get("pending_page")),
         "current_month_total": sum(
             item.total_liters for item in MilkRecord.objects.filter(record_date__year=today.year, record_date__month=today.month)
@@ -243,7 +243,8 @@ def finance_page(request):
     context["selected_year"] = year
     context["selected_month"] = month
     context["month_choices"] = MONTH_CHOICES
-    context["finance_category_rows"] = finance_totals_by_category(finance_qs)
+    confirmed_finance_qs = finance_qs.filter(status=FinanceStatusChoices.CONFIRMED)
+    context["finance_category_rows"] = finance_totals_by_category(confirmed_finance_qs)
     return render(request, "dashboard/finance_page.html", context)
 
 
@@ -273,7 +274,8 @@ def finance_edit(request, pk):
     context["selected_year"] = year
     context["selected_month"] = month
     context["month_choices"] = MONTH_CHOICES
-    context["finance_category_rows"] = finance_totals_by_category(finance_qs)
+    confirmed_finance_qs = finance_qs.filter(status=FinanceStatusChoices.CONFIRMED)
+    context["finance_category_rows"] = finance_totals_by_category(confirmed_finance_qs)
     return render(request, "dashboard/finance_page.html", context)
 
 
