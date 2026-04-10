@@ -116,9 +116,19 @@ def get_workers():
     return Worker.objects.prefetch_related("advances").all()
 
 
-def _salary_currency_carry(worker, current_month_start):
+def _previous_salary_balance(worker, current_month_start):
+    """Return previous months balance in worker salary currency.
+
+    Positive value means the farm still owes the worker.
+    Negative value means the worker was paid more than expected.
+    """
     if not worker.started_at:
-        return Decimal("0")
+        return {
+            "months": 0,
+            "expected": Decimal("0"),
+            "paid": Decimal("0"),
+            "balance": Decimal("0"),
+        }
     previous_months = 0
     cursor = _month_start(worker.started_at)
     while cursor < current_month_start:
@@ -131,7 +141,12 @@ def _salary_currency_carry(worker, current_month_start):
         month_ref = _month_start(payment.month_reference or payment.advance_date)
         if month_ref < current_month_start and payment.currency == worker.currency:
             paid += Decimal(payment.amount or 0)
-    return paid - expected
+    return {
+        "months": previous_months,
+        "expected": expected,
+        "paid": paid,
+        "balance": expected - paid,
+    }
 
 
 def get_worker_payroll_summary(reference_date=None):
@@ -157,11 +172,13 @@ def get_worker_payroll_summary(reference_date=None):
             (Decimal(p.amount or 0) for p in current_payments if p.currency == CurrencyChoices.USD and p.payment_type == WorkerAdvance.PaymentTypeChoices.ADVANCE),
             Decimal("0"),
         )
-        carry = _salary_currency_carry(worker, current_month_start)
-        remaining_salary = worker.monthly_salary - sum(
+        current_paid_salary_currency = sum(
             (Decimal(p.amount or 0) for p in current_payments if p.currency == worker.currency),
             Decimal("0"),
-        ) - carry
+        )
+        previous = _previous_salary_balance(worker, current_month_start)
+        total_due = previous["balance"] + worker.monthly_salary
+        remaining_salary = total_due - current_paid_salary_currency
 
         summary.append(
             {
@@ -176,7 +193,13 @@ def get_worker_payroll_summary(reference_date=None):
                 "month_paid_usd": month_usd,
                 "advance_uzs": advance_uzs,
                 "advance_usd": advance_usd,
-                "carry": carry,
+                "carry": previous["paid"] - previous["expected"],
+                "previous_months": previous["months"],
+                "previous_expected": previous["expected"],
+                "previous_paid": previous["paid"],
+                "previous_balance": previous["balance"],
+                "current_paid_salary_currency": current_paid_salary_currency,
+                "total_due": total_due,
                 "remaining": remaining_salary,
             }
         )

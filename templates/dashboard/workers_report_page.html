@@ -3,7 +3,7 @@
 
 {% block title %}Ishchilar hisobi{% endblock %}
 {% block page_title %}Ishchilar hisobi{% endblock %}
-{% block page_subtitle %}Oylik, avans, qoldiq va oshiqcha to'lovlar ko'rinishi{% endblock %}
+{% block page_subtitle %}Oldingi oylardan qolgan qarz/ortiqcha, shu oy berilgan pul va jami qoldiq{% endblock %}
 
 {% block content %}
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -76,10 +76,10 @@
           <th class="py-3">Ishchi</th>
           <th class="py-3">Rol</th>
           <th class="py-3">Oylik</th>
-          <th class="py-3">Shu oy avans</th>
-          <th class="py-3">Shu oy jami oldi</th>
-          <th class="py-3">Carry</th>
-          <th class="py-3">Qoldiq</th>
+          <th class="py-3">Oldingi oylar farqi</th>
+          <th class="py-3">Shu oy berildi</th>
+          <th class="py-3">Jami to'lanishi kerak</th>
+          <th class="py-3">Jami qoldiq</th>
         </tr>
       </thead>
       <tbody>
@@ -91,10 +91,32 @@
           </td>
           <td class="py-3">{{ item.role }}</td>
           <td class="py-3 font-black text-gray-800">{{ item.salary|floatformat:2|intcomma }} {{ item.currency }}</td>
-          <td class="py-3 font-bold text-amber-600">{{ item.advance_uzs|floatformat:0|intcomma }} UZS / {{ item.advance_usd|floatformat:2|intcomma }} USD</td>
+          <td class="py-3">
+            {% if item.previous_balance > 0 %}
+            <div class="font-black text-rose-700">{{ item.previous_balance|floatformat:2|intcomma }} {{ item.currency }}</div>
+            <div class="text-xs text-rose-500">{{ item.previous_months }} oy uchun berilmagan</div>
+            {% elif item.previous_balance < 0 %}
+            <div class="font-black text-emerald-700">{{ item.previous_balance|floatformat:2|intcomma }} {{ item.currency }}</div>
+            <div class="text-xs text-emerald-500">Oldin ortiqcha berilgan</div>
+            {% else %}
+            <div class="font-bold text-gray-500">Farq yo'q</div>
+            <div class="text-xs text-gray-400">{{ item.previous_months }} oy tekshirildi</div>
+            {% endif %}
+          </td>
           <td class="py-3 font-bold text-sky-600">{{ item.month_paid_uzs|floatformat:0|intcomma }} UZS / {{ item.month_paid_usd|floatformat:2|intcomma }} USD</td>
-          <td class="py-3 {% if item.carry > 0 %}text-rose-600{% elif item.carry < 0 %}text-emerald-600{% else %}text-gray-500{% endif %} font-semibold">{{ item.carry|floatformat:2|intcomma }} {{ item.currency }}</td>
-          <td class="py-3 {% if item.remaining < 0 %}text-rose-600{% else %}text-emerald-600{% endif %} font-bold">{{ item.remaining|floatformat:2|intcomma }} {{ item.currency }}</td>
+          <td class="py-3 font-black text-indigo-700">{{ item.total_due|floatformat:2|intcomma }} {{ item.currency }}</td>
+          <td class="py-3">
+            {% if item.remaining > 0 %}
+            <div class="font-black text-rose-700">{{ item.remaining|floatformat:2|intcomma }} {{ item.currency }}</div>
+            <div class="text-xs text-rose-500">Hali berilishi kerak</div>
+            {% elif item.remaining < 0 %}
+            <div class="font-black text-emerald-700">{{ item.remaining|floatformat:2|intcomma }} {{ item.currency }}</div>
+            <div class="text-xs text-emerald-500">Ortiqcha berilgan</div>
+            {% else %}
+            <div class="font-black text-emerald-700">0 {{ item.currency }}</div>
+            <div class="text-xs text-emerald-500">To'liq yopilgan</div>
+            {% endif %}
+          </td>
         </tr>
         {% empty %}
         <tr><td colspan="7" class="py-6 text-center text-gray-400">Ishchilar hali kiritilmagan</td></tr>

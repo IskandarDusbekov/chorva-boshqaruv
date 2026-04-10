@@ -27,8 +27,8 @@
             <th class="py-3">Boshlagan</th>
             <th class="py-3">Oylik kuni</th>
             <th class="py-3">Oylik</th>
-            <th class="py-3">Shu oy</th>
-            <th class="py-3">Qolgan</th>
+            <th class="py-3">Oldingi farq</th>
+            <th class="py-3">Jami qoldiq</th>
             <th class="py-3">Amal</th>
           </tr>
         </thead>
@@ -40,8 +40,27 @@
             <td class="py-3">{{ item.started_at|default:"-" }}</td>
             <td class="py-3">{{ item.payday_day }}</td>
             <td class="py-3 font-black text-gray-800">{{ item.salary|floatformat:2|intcomma }} {{ item.currency }}</td>
-            <td class="py-3 font-bold text-sky-700">{{ item.month_paid_uzs|floatformat:0|intcomma }} UZS / {{ item.month_paid_usd|floatformat:2|intcomma }} USD</td>
-            <td class="py-3 {% if item.remaining < 0 %}text-rose-600{% elif item.remaining > 0 %}text-emerald-600{% endif %} font-bold">{{ item.remaining|floatformat:2|intcomma }} {{ item.currency }}</td>
+            <td class="py-3">
+              {% if item.previous_balance > 0 %}
+              <span class="rounded-full bg-rose-50 px-3 py-1 text-xs font-black text-rose-700">{{ item.previous_balance|floatformat:2|intcomma }} {{ item.currency }} qarz</span>
+              {% elif item.previous_balance < 0 %}
+              <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">ortiqcha {{ item.previous_balance|floatformat:2|intcomma }} {{ item.currency }}</span>
+              {% else %}
+              <span class="rounded-full bg-gray-50 px-3 py-1 text-xs font-bold text-gray-500">Farq yo'q</span>
+              {% endif %}
+            </td>
+            <td class="py-3">
+              {% if item.remaining > 0 %}
+              <div class="font-black text-rose-700">{{ item.remaining|floatformat:2|intcomma }} {{ item.currency }}</div>
+              <div class="text-xs text-rose-500">Hali beriladi</div>
+              {% elif item.remaining < 0 %}
+              <div class="font-black text-emerald-700">{{ item.remaining|floatformat:2|intcomma }} {{ item.currency }}</div>
+              <div class="text-xs text-emerald-500">Ortiqcha berilgan</div>
+              {% else %}
+              <div class="font-black text-emerald-700">0 {{ item.currency }}</div>
+              <div class="text-xs text-emerald-500">Yopilgan</div>
+              {% endif %}
+            </td>
             <td class="py-3">
               <div class="flex gap-2">
                 <a href="{% url 'dashboard:worker_edit' item.id %}" class="px-3 py-1 rounded-lg bg-amber-100 text-amber-700">Edit</a>
