@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Hisobotlar{% endblock %}
+{% block page_title %}Umumiy hisobotlar{% endblock %}
+{% block page_subtitle %}Moliyaviy va sut ko'rsatkichlarining davriy ko'rinishi{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white rounded-2xl shadow p-5">
+        <h2 class="font-bold text-gray-800 mb-3">Davr</h2>
+        <p class="text-sm text-gray-500"><strong>{{ date_from }}</strong> dan <strong>{{ date_to }}</strong> gacha</p>
+        <div class="flex flex-wrap gap-2 mt-4">
+            <a class="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 text-sm font-bold" href="?period=weekly"><i class="fas fa-calendar-week mr-2"></i>Haftalik</a>
+            <a class="px-4 py-2 rounded-xl bg-indigo-50 text-indigo-700 text-sm font-bold" href="?period=monthly"><i class="fas fa-calendar-days mr-2"></i>Oxirgi oy</a>
+            <a class="px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-bold" href="?period=yearly"><i class="fas fa-calendar mr-2"></i>Yillik</a>
+            <a class="px-4 py-2 rounded-xl bg-amber-50 text-amber-700 text-sm font-bold" href="?period=yesterday"><i class="fas fa-clock-rotate-left mr-2"></i>Kechagi</a>
+        </div>
+    </div>
+    <div class="bg-white rounded-2xl shadow p-5">
+        <h2 class="font-bold text-gray-800 mb-3">Sut va moliya</h2>
+        <div class="space-y-2 text-sm">
+            <div class="flex justify-between rounded-xl bg-sky-50 px-3 py-2"><span class="text-sky-700">Sut</span><strong class="text-sky-800">{{ overview.total_liters|floatformat:2|intcomma }} litr</strong></div>
+            <div class="flex justify-between rounded-xl bg-emerald-50 px-3 py-2"><span class="text-emerald-700">Kirim</span><strong class="text-emerald-800">{{ overview.income_totals.UZS|floatformat:0|intcomma }} UZS / {{ overview.income_totals.USD|floatformat:2|intcomma }} USD</strong></div>
+            <div class="flex justify-between rounded-xl bg-rose-50 px-3 py-2"><span class="text-rose-700">Chiqim</span><strong class="text-rose-800">{{ overview.expense_totals.UZS|floatformat:0|intcomma }} UZS / {{ overview.expense_totals.USD|floatformat:2|intcomma }} USD</strong></div>
+        </div>
+    </div>
+    <div class="bg-white rounded-2xl shadow p-5">
+        <h2 class="font-bold text-gray-800 mb-3">Kassalar</h2>
+        <div class="space-y-2 text-sm">
+            <div class="flex justify-between rounded-xl bg-indigo-50 px-3 py-2"><span class="text-indigo-700">Ichki</span><strong class="text-indigo-800">{{ overview.internal_balance.UZS|floatformat:0|intcomma }} UZS / {{ overview.internal_balance.USD|floatformat:2|intcomma }} USD</strong></div>
+            <div class="flex justify-between rounded-xl bg-amber-50 px-3 py-2"><span class="text-amber-700">Tashqi</span><strong class="text-amber-800">{{ overview.external_balance.UZS|floatformat:0|intcomma }} UZS / {{ overview.external_balance.USD|floatformat:2|intcomma }} USD</strong></div>
+            <div class="flex justify-between rounded-xl bg-gray-50 px-3 py-2"><span class="text-gray-500">Ishchilar</span><strong>{{ overview.worker_count }}</strong></div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    <div class="bg-white rounded-2xl shadow p-5">
+        <h2 class="font-bold text-gray-800 mb-4">Moliyaviy tafsilotlar</h2>
+        <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-left text-gray-500 border-b">
+                    <th class="py-3">Sana</th>
+                    <th class="py-3">Turi</th>
+                    <th class="py-3">Kategoriya</th>
+                    <th class="py-3">Holat</th>
+                    <th class="py-3">Miqdor</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in finances %}
+                <tr class="border-b {% if item.entry_type == 'income' %}bg-emerald-50/60{% else %}bg-rose-50/60{% endif %}">
+                    <td class="py-3">{{ item.entry_date }}</td>
+                    <td class="py-3"><span class="rounded-full px-3 py-1 text-xs font-bold {% if item.entry_type == 'income' %}bg-emerald-100 text-emerald-700{% else %}bg-rose-100 text-rose-700{% endif %}">{{ item.get_entry_type_display }}</span></td>
+                    <td class="py-3 font-bold text-gray-800">{{ item.category }}</td>
+                    <td class="py-3">{{ item.get_status_display }}</td>
+                    <td class="py-3 font-black {% if item.entry_type == 'income' %}text-emerald-700{% else %}text-rose-700{% endif %}">{{ item.amount|floatformat:2|intcomma }} {{ item.currency }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="py-6 text-center text-gray-400">Yozuvlar topilmadi.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+    <div class="bg-white rounded-2xl shadow p-5">
+        <h2 class="font-bold text-gray-800 mb-4">Ishchilar oyligi va avans</h2>
+        <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-left text-gray-500 border-b">
+                    <th class="py-3">Ishchi</th>
+                    <th class="py-3">Rol</th>
+                    <th class="py-3">Oylik</th>
+                    <th class="py-3">Shu oy</th>
+                    <th class="py-3">Qolgan</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in worker_payroll %}
+                <tr class="border-b">
+                    <td class="py-3">{{ item.name }}</td>
+                    <td class="py-3">{{ item.role }}</td>
+                    <td class="py-3 font-black">{{ item.salary|floatformat:2|intcomma }} {{ item.currency }}</td>
+                    <td class="py-3 font-bold text-sky-700">{{ item.month_paid_uzs|floatformat:0|intcomma }} UZS / {{ item.month_paid_usd|floatformat:2|intcomma }} USD</td>
+                    <td class="py-3 font-black {% if item.remaining < 0 %}text-rose-700{% else %}text-emerald-700{% endif %}">{{ item.remaining|floatformat:2|intcomma }} {{ item.currency }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="py-6 text-center text-gray-400">Ishchilar kiritilmagan.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

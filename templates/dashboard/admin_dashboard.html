@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block header %}Kengaytirilgan admin dashboard{% endblock %}
+{% block subtitle %}Ferma bo'yicha umumiy o'sish, balans va boshqaruv ko'rinishi.{% endblock %}
+
+{% block content %}
+<div class="grid grid-3" style="margin-bottom:18px;">
+    <div class="card"><h2 class="section-title">Jami sut</h2><div class="stat-value">{{ stats.total_liters }} L</div></div>
+    <div class="card"><h2 class="section-title">Jami kirim</h2><div class="stat-value">{{ stats.income_totals.UZS }} UZS / {{ stats.income_totals.USD }} USD</div></div>
+    <div class="card"><h2 class="section-title">Jami chiqim</h2><div class="stat-value">{{ stats.expense_totals.UZS }} UZS / {{ stats.expense_totals.USD }} USD</div></div>
+</div>
+<div class="grid grid-2">
+    <div class="card">
+        <h2 class="section-title">Balanslar</h2>
+        <div class="row"><span>Ichki hisob</span><strong>{{ stats.internal_balance.UZS }} UZS / {{ stats.internal_balance.USD }} USD</strong></div>
+        <div class="row"><span>Tashqi hisob</span><strong>{{ stats.external_balance.UZS }} UZS / {{ stats.external_balance.USD }} USD</strong></div>
+        <div class="row"><span>Ishchilar soni</span><strong>{{ stats.worker_count }}</strong></div>
+    </div>
+    <div class="card">
+        <h2 class="section-title">Haftalik trend</h2>
+        <div class="progress"><span style="width: {{ stats.progress_percent }}%;"></span></div>
+        <p class="muted">Bugungi ko'rsatkich eng yuqori kunga nisbatan {{ stats.progress_percent }}%</p>
+        <p class="muted">Kechaga nisbatan o'sish: {{ stats.growth_percent|floatformat:1 }}%</p>
+    </div>
+</div>
+{% endblock %}

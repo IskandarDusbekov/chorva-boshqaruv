@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}BotGate Ferma{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        body { background: #f1f5f9; font-family: Inter, "Segoe UI", sans-serif; }
+        .sidebar-link.active { background: rgb(238 242 255); color: rgb(67 56 202); font-weight: 600; }
+        .bottom-link.active { color: rgb(79 70 229); font-weight: 600; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <aside class="hidden md:block fixed top-0 left-0 h-full w-72 bg-white shadow-2xl z-30">
+        <div class="flex flex-col h-full">
+            <div class="px-6 py-7 border-b border-gray-100 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center shadow-lg">
+                    <i class="fas fa-tractor text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold text-gray-800">Chorvachilik</h1>
+                    <p class="text-xs text-gray-500">Smart Ferma</p>
+                </div>
+            </div>
+            <nav class="flex-1 px-4 py-6 space-y-2">
+                <a href="{% url 'dashboard:home' %}" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 {% if nav_active == 'home' %}active{% endif %}"><i class="fas fa-house w-5"></i><span>Asosiy Dashboard</span></a>
+                <a href="{% url 'dashboard:milk_page' %}" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 {% if nav_active == 'milk' %}active{% endif %}"><i class="fas fa-glass-water-droplet w-5"></i><span>Sut boshqaruvi</span></a>
+                <a href="{% url 'dashboard:finance_page' %}" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 {% if nav_active == 'finance' %}active{% endif %}"><i class="fas fa-wallet w-5"></i><span>Kirim & Chiqim</span></a>
+                <a href="{% url 'dashboard:workers_report_page' %}" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 {% if nav_active == 'workers_report' %}active{% endif %}"><i class="fas fa-file-invoice-dollar w-5"></i><span>Ishchilar hisobi</span></a>
+                <a href="{% url 'dashboard:workers_page' %}" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 {% if nav_active == 'workers_manage' %}active{% endif %}"><i class="fas fa-users-gear w-5"></i><span>Xodimlarni boshqarish</span></a>
+            </nav>
+        </div>
+    </aside>
+
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t z-40">
+        <div class="grid grid-cols-5 gap-1 p-2 text-center text-[11px]">
+            <a href="{% url 'dashboard:home' %}" class="bottom-link py-2 text-gray-500 {% if nav_active == 'home' %}active{% endif %}"><i class="fas fa-house block mb-1"></i>Bosh</a>
+            <a href="{% url 'dashboard:milk_page' %}" class="bottom-link py-2 text-gray-500 {% if nav_active == 'milk' %}active{% endif %}"><i class="fas fa-tint block mb-1"></i>Sut</a>
+            <a href="{% url 'dashboard:finance_page' %}" class="bottom-link py-2 text-gray-500 {% if nav_active == 'finance' %}active{% endif %}"><i class="fas fa-wallet block mb-1"></i>Moliya</a>
+            <a href="{% url 'dashboard:workers_report_page' %}" class="bottom-link py-2 text-gray-500 {% if nav_active == 'workers_report' %}active{% endif %}"><i class="fas fa-id-card block mb-1"></i>Hisob</a>
+            <a href="{% url 'dashboard:workers_page' %}" class="bottom-link py-2 text-gray-500 {% if nav_active == 'workers_manage' %}active{% endif %}"><i class="fas fa-users-cog block mb-1"></i>Xodim</a>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto p-4 md:p-8 md:ml-72 pb-24 md:pb-8">
+        {% if messages %}
+        <div class="space-y-2 mb-4">
+            {% for message in messages %}
+            <div class="rounded-2xl px-4 py-3 shadow {% if message.tags == 'success' %}bg-emerald-50 text-emerald-700{% elif message.tags == 'warning' %}bg-amber-50 text-amber-700{% else %}bg-rose-50 text-rose-700{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+            <div>
+                <h1 class="text-3xl font-black text-gray-800">{% block page_title %}Ferma paneli{% endblock %}</h1>
+                <p class="text-gray-500">{% block page_subtitle %}Ferma boshqaruvi{% endblock %}</p>
+            </div>
+            {% block header_actions %}{% endblock %}
+        </div>
+
+        {% block content %}{% endblock %}
+    </div>
+    <div id="confirmModal" class="hidden fixed inset-0 z-[100] bg-slate-950/45 p-4">
+        <div class="mx-auto mt-24 max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+            <div class="mb-4 flex items-center gap-3">
+                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+                    <i class="fas fa-triangle-exclamation text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-black text-slate-800">Tasdiqlash kerak</h3>
+                    <p class="text-sm text-slate-500">Amalni davom ettirishdan oldin yana bir marta tekshiring.</p>
+                </div>
+            </div>
+            <p id="confirmModalMessage" class="mb-6 text-sm leading-6 text-slate-600">Haqiqatan ham davom etasizmi?</p>
+            <div class="flex items-center justify-end gap-3">
+                <button type="button" onclick="closeConfirmModal()" class="rounded-2xl bg-rose-500 px-5 py-2.5 text-sm font-semibold text-white">Bekor qilish</button>
+                <button type="button" onclick="submitConfirmModal()" class="rounded-2xl bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 ring-1 ring-slate-200">Tasdiqlash</button>
+            </div>
+        </div>
+    </div>
+    {% block extra_scripts %}{% endblock %}
+    <script>
+        let confirmModalForm = null;
+
+        function openConfirmModal(form, message) {
+            confirmModalForm = form;
+            document.getElementById("confirmModalMessage").innerText = message || "Haqiqatan ham davom etasizmi?";
+            document.getElementById("confirmModal").classList.remove("hidden");
+            return false;
+        }
+
+        function closeConfirmModal() {
+            confirmModalForm = null;
+            document.getElementById("confirmModal").classList.add("hidden");
+        }
+
+        function submitConfirmModal() {
+            if (confirmModalForm) {
+                confirmModalForm.submit();
+            }
+            closeConfirmModal();
+        }
+    </script>
+</body>
+</html>

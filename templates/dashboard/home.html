@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Asosiy Dashboard{% endblock %}
+{% block page_title %}Asosiy Dashboard{% endblock %}
+{% block page_subtitle %}Ferma holati, balans va eng muhim ko'rsatkichlar{% endblock %}
+{% block header_actions %}
+<div class="flex flex-wrap gap-2">
+  <button type="button" onclick="toggleMilkModal()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">Sut qo'shish</button>
+  <button type="button" onclick="togglePriceModal()" class="px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-semibold">Sut narxi</button>
+  <button type="button" onclick="toggleAdvanceModal()" class="px-4 py-2 rounded-xl bg-amber-500 text-white text-sm font-semibold">Avans berish</button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white rounded-2xl shadow p-5">
+    <div class="text-sm text-gray-500">Bugungi sut</div>
+    <div class="text-3xl font-black text-indigo-700 mt-2">{{ stats.today_liters|floatformat:0|intcomma }} L</div>
+    <div class="text-xs {% if stats.growth_percent >= 0 %}text-emerald-600{% else %}text-rose-600{% endif %} mt-2">
+      {{ stats.growth_percent|floatformat:1 }}% kechagiga nisbatan
+    </div>
+  </div>
+  <div class="bg-white rounded-2xl shadow p-5">
+    <div class="text-sm text-gray-500">Oxirgi davr sut hajmi</div>
+    <div class="text-3xl font-black text-gray-800 mt-2">{{ stats.total_liters|floatformat:0|intcomma }} L</div>
+    <div class="text-xs text-gray-400 mt-2">Eng ko'p: {{ stats.max_daily|floatformat:0|intcomma }} L | Eng kam: {{ stats.min_daily|floatformat:0|intcomma }} L</div>
+  </div>
+  <div class="bg-white rounded-2xl shadow p-5">
+    <div class="text-sm text-gray-500">Ferma asosiy hisobi</div>
+    <div class="text-2xl font-black text-emerald-700 mt-2">{{ stats.farm_balance.UZS|floatformat:0|intcomma }} UZS</div>
+    <div class="text-sm font-bold text-emerald-500">{{ stats.farm_balance.USD|floatformat:2|intcomma }} USD</div>
+    <div class="text-xs text-gray-400 mt-2">Faqat ichki hisobdagi pul</div>
+  </div>
+  <div class="bg-white rounded-2xl shadow p-5">
+    <div class="text-sm text-gray-500">Kutilayotgan sut puli</div>
+    <div class="text-2xl font-black text-sky-700 mt-2">{{ stats.pending_milk_totals.UZS|floatformat:0|intcomma }} UZS</div>
+    <div class="text-sm font-bold text-sky-500">{{ stats.pending_milk_totals.USD|floatformat:2|intcomma }} USD</div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+  <div class="xl:col-span-2 bg-white rounded-2xl shadow p-5">
+    <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+      <div>
+        <h2 class="font-bold text-gray-800">Haftalik progress</h2>
+        <p class="text-sm text-gray-400">Sut hajmi va o'sish dinamikasi</p>
+      </div>
+      <div class="text-right">
+        <div class="text-xs text-gray-400">Bugungi progress</div>
+        <div class="text-xl font-black text-indigo-700">{{ stats.progress_percent }}%</div>
+      </div>
+    </div>
+    <div class="mb-5">
+      <div class="h-3 rounded-full bg-gray-100 overflow-hidden">
+        <div class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-sky-500" style="width: {{ stats.progress_percent }}%;"></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-7 gap-3 items-end h-56">
+      {% for item in stats.weekly_chart %}
+      <div class="flex flex-col items-center justify-end h-full">
+        <div class="text-[11px] font-semibold text-gray-500 mb-2">{{ item.liters|floatformat:0 }}</div>
+        <div class="w-full rounded-t-2xl bg-gradient-to-t from-indigo-600 to-sky-400" style="height: {% widthratio item.percent 1 2 %}px; min-height: 18px;"></div>
+        <div class="text-[11px] text-gray-400 mt-2">{{ item.date }}</div>
+      </div>
+      {% empty %}
+      <div class="col-span-7 text-sm text-gray-400">Grafik uchun ma'lumot yo'q</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow p-5">
+    <h2 class="font-bold text-gray-800 mb-4">Sut narxi va balanslar</h2>
+    <div class="space-y-4">
+      <div class="rounded-2xl bg-violet-50 p-4">
+        <div class="text-xs text-violet-600 font-semibold">AKTIV NARX</div>
+        {% if stats.active_milk_price %}
+        <div class="text-2xl font-black text-violet-700 mt-2">{{ stats.active_milk_price.price_per_liter|floatformat:0|intcomma }} {{ stats.active_milk_price.currency }}</div>
+        <div class="text-xs text-gray-500 mt-1">{{ stats.active_milk_price.effective_from }}</div>
+        {% else %}
+        <div class="text-sm text-gray-400 mt-2">Narx kiritilmagan</div>
+        {% endif %}
+      </div>
+      <div class="rounded-2xl bg-emerald-50 p-4">
+        <div class="text-xs text-emerald-600 font-semibold">ICHKI HISOB</div>
+        <div class="text-lg font-black text-emerald-700 mt-2">{{ stats.internal_balance.UZS|floatformat:0|intcomma }} UZS</div>
+        <div class="text-sm font-semibold text-emerald-500">{{ stats.internal_balance.USD|floatformat:2|intcomma }} USD</div>
+      </div>
+      <div class="rounded-2xl bg-amber-50 p-4">
+        <div class="text-xs text-amber-600 font-semibold">TASHQI HISOB</div>
+        <div class="text-lg font-black text-amber-700 mt-2">{{ stats.external_balance.UZS|floatformat:0|intcomma }} UZS</div>
+        <div class="text-sm font-semibold text-amber-500">{{ stats.external_balance.USD|floatformat:2|intcomma }} USD</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+  <div class="xl:col-span-2 bg-white rounded-2xl shadow p-5">
+    <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+      <h2 class="font-bold text-gray-800">Oxirgi sut yozuvlari</h2>
+      <a href="{% url 'dashboard:milk_page' %}" class="px-4 py-2 rounded-xl bg-indigo-50 text-indigo-700 text-sm font-semibold">Sut boshqaruviga o'tish</a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-gray-500 border-b">
+            <th class="py-3">Sana</th>
+            <th class="py-3">Ertalab</th>
+            <th class="py-3">Kechki</th>
+            <th class="py-3">Jami</th>
+            <th class="py-3">Narx</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in stats.recent_milk_records %}
+          <tr class="border-b">
+            <td class="py-3">{{ item.record_date }}</td>
+            <td class="py-3">{{ item.morning_liters|floatformat:1|intcomma }} L</td>
+            <td class="py-3">{{ item.evening_liters|floatformat:1|intcomma }} L</td>
+            <td class="py-3 font-semibold">{{ item.total_liters|floatformat:1|intcomma }} L</td>
+            <td class="py-3">{{ item.price_per_liter|floatformat:0|intcomma }} {{ item.currency }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="py-6 text-center text-gray-400">Hozircha sut yozuvi yo'q</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow p-5">
+    <h2 class="font-bold text-gray-800 mb-4">Tezkor o'tish</h2>
+    <div class="space-y-3">
+      <a href="{% url 'dashboard:milk_page' %}" class="flex items-center justify-between rounded-2xl bg-indigo-50 px-4 py-4 text-indigo-700">
+        <span class="font-semibold">Sut boshqaruvi</span>
+        <i class="fas fa-chevron-right"></i>
+      </a>
+      <a href="{% url 'dashboard:finance_page' %}" class="flex items-center justify-between rounded-2xl bg-emerald-50 px-4 py-4 text-emerald-700">
+        <span class="font-semibold">Kirim & Chiqim</span>
+        <i class="fas fa-chevron-right"></i>
+      </a>
+      <a href="{% url 'dashboard:workers_report_page' %}" class="flex items-center justify-between rounded-2xl bg-amber-50 px-4 py-4 text-amber-700">
+        <span class="font-semibold">Ishchilar hisobi</span>
+        <i class="fas fa-chevron-right"></i>
+      </a>
+      <a href="{% url 'dashboard:workers_page' %}" class="flex items-center justify-between rounded-2xl bg-sky-50 px-4 py-4 text-sky-700">
+        <span class="font-semibold">Xodimlarni boshqarish</span>
+        <i class="fas fa-chevron-right"></i>
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+  <div class="bg-white rounded-2xl shadow p-5">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="font-bold text-gray-800">Oxirgi kirim va chiqimlar</h2>
+      <a href="{% url 'dashboard:finance_page' %}" class="text-sm text-indigo-600 font-semibold">Barchasini ko'rish</a>
+    </div>
+    <div class="space-y-3">
+      {% for item in stats.recent_finances %}
+      <div class="flex justify-between items-start border-b pb-3">
+        <div>
+          <div class="font-semibold text-gray-800">{{ item.category }}</div>
+          <div class="text-xs text-gray-400">{{ item.entry_date }} | {{ item.get_source_display }}</div>
+        </div>
+        <div class="text-right">
+          <div class="font-semibold {% if item.entry_type == 'income' %}text-emerald-600{% else %}text-rose-600{% endif %}">
+            {{ item.amount|floatformat:2|intcomma }} {{ item.currency }}
+          </div>
+          <div class="text-xs text-gray-400">{{ item.get_entry_type_display }}</div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-sm text-gray-400">Moliyaviy yozuvlar yo'q</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow p-5">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="font-bold text-gray-800">Ishchilar bo'yicha qisqa holat</h2>
+      <a href="{% url 'dashboard:workers_report_page' %}" class="text-sm text-indigo-600 font-semibold">Hisobni ochish</a>
+    </div>
+    <div class="space-y-3">
+      {% for item in worker_payroll|slice:":6" %}
+      <div class="flex justify-between items-start border-b pb-3">
+        <div>
+          <div class="font-semibold text-gray-800">{{ item.name }}</div>
+          <div class="text-xs text-gray-400">{{ item.role }}</div>
+        </div>
+        <div class="text-right text-sm">
+          <div class="text-amber-600">Shu oy: {{ item.month_paid_uzs|floatformat:0|intcomma }} UZS / {{ item.month_paid_usd|floatformat:2|intcomma }} USD</div>
+          <div class="{% if item.remaining < 0 %}text-rose-600{% else %}text-emerald-600{% endif %} font-semibold">
+            Qoldiq: {{ item.remaining|floatformat:2|intcomma }} {{ item.currency }}
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-sm text-gray-400">Ishchilar hali kiritilmagan</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div id="priceModal" class="hidden fixed inset-0 bg-black/40 p-4 z-50 overflow-y-auto">
+  <div class="max-w-md mx-auto mt-16 bg-white rounded-3xl shadow-2xl p-5">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold">Sut narxini belgilash</h3>
+      <button type="button" onclick="togglePriceModal()" class="text-gray-500"><i class="fas fa-xmark"></i></button>
+    </div>
+    <form method="post" action="{% url 'dashboard:milk_price_create' %}" class="space-y-3">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}">
+      {% for field in milk_price_form %}
+      <div>
+        <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
+        {{ field }}
+      </div>
+      {% endfor %}
+      <button class="w-full px-4 py-2 rounded-xl bg-violet-600 text-white">Saqlash</button>
+    </form>
+  </div>
+</div>
+
+<div id="milkModal" class="hidden fixed inset-0 bg-black/40 p-4 z-50 overflow-y-auto">
+  <div class="max-w-md mx-auto mt-10 bg-white rounded-3xl shadow-2xl p-5">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold">Sut qo'shish</h3>
+      <button type="button" onclick="toggleMilkModal()" class="text-gray-500"><i class="fas fa-xmark"></i></button>
+    </div>
+    <form method="post" action="{% url 'dashboard:entry_create' %}" class="space-y-3">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}">
+      {% for field in milk_form %}
+      <div>
+        <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
+        {{ field }}
+      </div>
+      {% endfor %}
+      <button class="w-full px-4 py-2 rounded-xl bg-indigo-600 text-white">Saqlash</button>
+    </form>
+  </div>
+</div>
+
+<div id="advanceModal" class="hidden fixed inset-0 bg-black/40 p-4 z-50 overflow-y-auto">
+  <div class="max-w-md mx-auto mt-10 bg-white rounded-3xl shadow-2xl p-5">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold">Avans / ish haqi berish</h3>
+      <button type="button" onclick="toggleAdvanceModal()" class="text-gray-500"><i class="fas fa-xmark"></i></button>
+    </div>
+    <form method="post" action="{% url 'dashboard:worker_advance_create' %}" class="space-y-3">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}">
+      {% for field in advance_form %}
+      <div>
+        <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
+        {{ field }}
+      </div>
+      {% endfor %}
+      <button class="w-full px-4 py-2 rounded-xl bg-amber-500 text-white">Saqlash</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function togglePriceModal() {
+    document.getElementById('priceModal').classList.toggle('hidden');
+  }
+  function toggleMilkModal() {
+    document.getElementById('milkModal').classList.toggle('hidden');
+  }
+  function toggleAdvanceModal() {
+    document.getElementById('advanceModal').classList.toggle('hidden');
+  }
+</script>
+{% endblock %}

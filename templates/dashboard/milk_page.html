@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Sut boshqaruvi{% endblock %}
+{% block page_title %}Sut boshqaruvi{% endblock %}
+{% block page_subtitle %}Sut narxi, sut yozuvi va kutilayotgan to'lovlar{% endblock %}
+{% block header_actions %}
+<div class="flex flex-wrap gap-2">
+  <button type="button" onclick="toggleMilkModal()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">Sut qo'shish</button>
+  <button type="button" onclick="togglePriceModal()" class="px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-semibold">Sut narxi</button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
+  <div class="bg-violet-50 rounded-2xl shadow p-5 border border-violet-100">
+    <div class="text-sm text-violet-700 font-semibold flex items-center gap-2"><i class="fas fa-tags"></i> Aktiv sut narxi</div>
+    {% if stats.active_milk_price %}
+    <div class="text-3xl font-black text-violet-900 mt-2">{{ stats.active_milk_price.price_per_liter|floatformat:0|intcomma }} {{ stats.active_milk_price.currency }}</div>
+    <div class="text-sm text-violet-700 mt-1">{{ stats.active_milk_price.effective_from }} dan</div>
+    {% else %}
+    <div class="text-sm text-gray-400 mt-2">Hali sut narxi belgilanmagan</div>
+    {% endif %}
+  </div>
+  <div class="bg-sky-50 rounded-2xl shadow p-5 border border-sky-100">
+    <div class="text-sm text-sky-700 font-semibold flex items-center gap-2"><i class="fas fa-hourglass-half"></i> Kutilayotgan sut puli</div>
+    <div class="text-3xl font-black text-sky-900 mt-2 break-all">{{ stats.pending_milk_totals.UZS|floatformat:0|intcomma }} UZS</div>
+    <div class="text-lg font-extrabold text-sky-700 break-all">{{ stats.pending_milk_totals.USD|floatformat:2|intcomma }} USD</div>
+  </div>
+  <div class="bg-emerald-50 rounded-2xl shadow p-5 border border-emerald-100">
+    <div class="text-sm text-emerald-700 font-semibold flex items-center gap-2"><i class="fas fa-glass-water"></i> Shu oy jami sut</div>
+    <div class="text-3xl font-black text-emerald-900 mt-2">{{ current_month_total|floatformat:1|intcomma }} L</div>
+    <div class="text-sm text-emerald-700 mt-1">Joriy oy bo'yicha umumiy hajm</div>
+  </div>
+</div>
+
+<div class="bg-white rounded-2xl shadow p-5 mb-6">
+  <div class="text-sm text-gray-500">Ko'rinadigan davr</div>
+  <form method="get" class="grid grid-cols-2 gap-3 mt-3">
+    <input type="date" name="date_from" value="{{ date_from|date:'Y-m-d' }}" class="border rounded-xl px-3 py-2">
+    <input type="date" name="date_to" value="{{ date_to|date:'Y-m-d' }}" class="border rounded-xl px-3 py-2">
+    <button class="col-span-2 px-4 py-2 rounded-xl bg-indigo-600 text-white">Ko'rish</button>
+  </form>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+  <div class="xl:col-span-2 bg-white rounded-2xl shadow p-5">
+    <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fas fa-table text-indigo-500"></i> Sut yozuvlari</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-gray-500 border-b">
+            <th class="py-3">Sana</th>
+            <th class="py-3">Ertalab</th>
+            <th class="py-3">Kechki</th>
+            <th class="py-3">Jami</th>
+            <th class="py-3">Narx</th>
+            <th class="py-3">Amal</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in milk_page_obj %}
+          <tr class="border-b">
+            <td class="py-3">{{ item.record_date }}</td>
+            <td class="py-3">{{ item.morning_liters|floatformat:1|intcomma }} L</td>
+            <td class="py-3">{{ item.evening_liters|floatformat:1|intcomma }} L</td>
+            <td class="py-3 font-bold">{{ item.total_liters|floatformat:1|intcomma }} L</td>
+            <td class="py-3 break-all">{{ item.price_per_liter|floatformat:0|intcomma }} {{ item.currency }}</td>
+            <td class="py-3">
+              <div class="flex gap-2">
+                <a href="{% url 'dashboard:milk_edit' item.id %}" class="px-3 py-1 rounded-lg bg-amber-100 text-amber-700">Edit</a>
+                <form method="post" action="{% url 'dashboard:milk_delete' item.id %}">
+                  {% csrf_token %}
+                  <button type="button" onclick="return openConfirmModal(this.form, 'Sut yozuvini ochirishni tasdiqlaysizmi?')" class="px-3 py-1 rounded-lg bg-rose-100 text-rose-700">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="py-4 text-gray-400">Sut yozuvlari yo'q</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if milk_page_obj.paginator.num_pages > 1 %}
+    <div class="flex flex-wrap gap-2 justify-end mt-4">
+      {% if milk_page_obj.has_previous %}
+      <a href="?page={{ milk_page_obj.previous_page_number }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">Oldingi</a>
+      {% endif %}
+      <span class="px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 text-sm">{{ milk_page_obj.number }} / {{ milk_page_obj.paginator.num_pages }}</span>
+      {% if milk_page_obj.has_next %}
+      <a href="?page={{ milk_page_obj.next_page_number }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">Keyingi</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+  <div class="bg-white rounded-2xl shadow p-5">
+    <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fas fa-circle-info text-sky-500"></i> Qisqa eslatma</h2>
+    <p class="text-sm text-gray-500 mb-2">Ertalab yoki kechki sutni alohida kiritishingiz mumkin.</p>
+    <p class="text-sm text-gray-500 mb-2">Bo'sh qoldirilgan maydon avvalgi qiymatini saqlaydi.</p>
+    <p class="text-sm text-gray-500">Pending/default hisobdagi to'lov keyin ferma hisobiga o'tkaziladi.</p>
+  </div>
+</div>
+
+<div class="bg-white rounded-2xl shadow p-5 mt-6">
+  <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fas fa-money-bill-transfer text-sky-500"></i> Kutilayotgan sut to'lovlari</h2>
+  <div class="space-y-3">
+    {% for item in pending_page_obj %}
+    <div class="border rounded-2xl p-4 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <div class="font-semibold">{{ item.entry_date }} | {{ item.amount|floatformat:2|intcomma }} {{ item.currency }}</div>
+        <div class="text-sm text-gray-500">{{ item.related_milk_record.total_liters|floatformat:1|intcomma }} litr | {{ item.get_status_display }}</div>
+      </div>
+      <form method="post" action="{% url 'dashboard:milk_payment_receive' item.id %}" class="flex flex-wrap gap-2">
+        {% csrf_token %}
+        <input type="date" name="received_at" value="{{ date_to|date:'Y-m-d' }}" class="border rounded-xl px-3 py-2 text-sm">
+        <select name="account_source" class="border rounded-xl px-3 py-2 text-sm">
+          <option value="internal">Ichki hisob</option>
+          <option value="external">Tashqi hisob</option>
+        </select>
+        <button class="px-4 py-2 rounded-xl bg-sky-600 text-white text-sm">Hisobga qo'shish</button>
+      </form>
+    </div>
+    {% empty %}
+    <div class="text-sm text-gray-400">Kutilayotgan sut to'lovlari yo'q</div>
+    {% endfor %}
+  </div>
+  {% if pending_page_obj.paginator.num_pages > 1 %}
+  <div class="flex flex-wrap gap-2 justify-end mt-4">
+    {% if pending_page_obj.has_previous %}
+    <a href="?pending_page={{ pending_page_obj.previous_page_number }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">Oldingi</a>
+    {% endif %}
+    <span class="px-3 py-2 rounded-lg bg-sky-50 text-sky-700 text-sm">{{ pending_page_obj.number }} / {{ pending_page_obj.paginator.num_pages }}</span>
+    {% if pending_page_obj.has_next %}
+    <a href="?pending_page={{ pending_page_obj.next_page_number }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">Keyingi</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<div id="priceModal" class="hidden fixed inset-0 bg-black/40 p-4 z-50">
+  <div class="max-w-md mx-auto mt-16 bg-white rounded-3xl shadow-2xl p-5">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold">Sut narxini belgilash</h3>
+      <button type="button" onclick="togglePriceModal()" class="text-gray-500"><i class="fas fa-xmark"></i></button>
+    </div>
+    <form method="post" action="{% url 'dashboard:milk_price_create' %}" class="space-y-3">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}">
+      {% for field in milk_price_form %}
+      <div>
+        <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
+        {{ field }}
+      </div>
+      {% endfor %}
+      <button class="w-full px-4 py-2 rounded-xl bg-violet-600 text-white">Saqlash</button>
+    </form>
+  </div>
+</div>
+
+<div id="milkModal" class="{% if edit_item %}{% else %}hidden{% endif %} fixed inset-0 bg-black/40 p-4 z-50">
+  <div class="max-w-md mx-auto mt-10 bg-white rounded-3xl shadow-2xl p-5">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold">{% if edit_item %}Sut yozuvini tahrirlash{% else %}Yangi sut yozuvi{% endif %}</h3>
+      <button type="button" onclick="toggleMilkModal()" class="text-gray-500"><i class="fas fa-xmark"></i></button>
+    </div>
+    <p class="text-xs text-gray-500 mb-3">Avval qaysi payt ekanini tanlaysiz, keyin litrni kiritasiz. Bu biri ikkinchisini 0 qilib yubormasligi uchun.</p>
+    <form method="post" action="{% if edit_item %}{% url 'dashboard:milk_edit' edit_item.id %}{% else %}{% url 'dashboard:entry_create' %}{% endif %}" class="space-y-3">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}">
+      {% for field in milk_form %}
+      <div>
+        <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
+        {{ field }}
+      </div>
+      {% endfor %}
+      <button class="w-full px-4 py-2 rounded-xl bg-emerald-600 text-white">{% if edit_item %}Yangilash{% else %}Saqlash{% endif %}</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function togglePriceModal() {
+    document.getElementById('priceModal').classList.toggle('hidden');
+  }
+  function toggleMilkModal() {
+    document.getElementById('milkModal').classList.toggle('hidden');
+  }
+</script>
+{% endblock %}

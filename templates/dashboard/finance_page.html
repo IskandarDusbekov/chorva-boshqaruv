@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Moliya{% endblock %}
+{% block page_title %}Moliya bo'limi{% endblock %}
+{% block page_subtitle %}Kirim, chiqim, moliyaviy hisobot va tarixni boshqarish{% endblock %}
+{% block header_actions %}
+<div class="flex flex-wrap gap-2">
+  <a href="{% url 'dashboard:general_report_export' %}?date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}&year={{ selected_year|default:'' }}&month={{ selected_month|default:'' }}" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-semibold"><i class="fas fa-file-excel mr-2"></i>Umumiy hisobot</a>
+  <button type="button" onclick="toggleFinanceForm()" class="px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-semibold"><i class="fas fa-plus mr-2"></i>Yangi yozuv</button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white rounded-2xl shadow p-4"><div class="text-sm text-gray-500">Jami kirim</div><div class="text-2xl font-black text-emerald-700 break-all">{{ overview.income_totals.UZS|floatformat:0|intcomma }} UZS</div><div class="text-sm font-bold text-emerald-600 break-all">{{ overview.income_totals.USD|floatformat:2|intcomma }} USD</div></div>
+  <div class="bg-white rounded-2xl shadow p-4"><div class="text-sm text-gray-500">Jami chiqim</div><div class="text-2xl font-black text-rose-700 break-all">{{ overview.expense_totals.UZS|floatformat:0|intcomma }} UZS</div><div class="text-sm font-bold text-rose-600 break-all">{{ overview.expense_totals.USD|floatformat:2|intcomma }} USD</div></div>
+  <div class="bg-white rounded-2xl shadow p-4"><div class="text-sm text-gray-500">Ichki balans</div><div class="text-2xl font-black text-indigo-700 break-all">{{ overview.internal_balance.UZS|floatformat:0|intcomma }} UZS</div><div class="text-sm font-bold text-indigo-600 break-all">{{ overview.internal_balance.USD|floatformat:2|intcomma }} USD</div></div>
+  <div class="bg-white rounded-2xl shadow p-4"><div class="text-sm text-gray-500">Tashqi balans</div><div class="text-2xl font-black text-amber-700 break-all">{{ overview.external_balance.UZS|floatformat:0|intcomma }} UZS</div><div class="text-sm font-bold text-amber-600 break-all">{{ overview.external_balance.USD|floatformat:2|intcomma }} USD</div></div>
+</div>
+
+<div class="bg-white rounded-2xl shadow p-5 mb-6">
+  <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+    <h2 class="font-bold text-gray-800">Moliyaviy hisobot</h2>
+    <div class="flex flex-wrap gap-2">
+      <a href="{% url 'dashboard:report_list' %}?period=weekly" class="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 text-sm font-semibold"><i class="fas fa-calendar-week mr-2"></i>Haftalik</a>
+      <a href="{% url 'dashboard:report_list' %}?period=monthly" class="px-4 py-2 rounded-xl bg-indigo-50 text-indigo-700 text-sm font-semibold"><i class="fas fa-calendar-days mr-2"></i>Oxirgi oy</a>
+      <a href="{% url 'dashboard:report_list' %}?period=yesterday" class="px-4 py-2 rounded-xl bg-amber-50 text-amber-700 text-sm font-semibold"><i class="fas fa-clock-rotate-left mr-2"></i>Kechagi</a>
+      <a href="{% url 'dashboard:general_report_export' %}?date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}&year={{ selected_year|default:'' }}&month={{ selected_month|default:'' }}" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-semibold"><i class="fas fa-download mr-2"></i>Excel yuklash</a>
+    </div>
+  </div>
+  <form method="get" class="grid grid-cols-1 md:grid-cols-5 gap-3">
+    <div>
+      <label class="block text-xs text-gray-500 mb-1">Boshlanish</label>
+      <input type="date" name="date_from" value="{{ date_from|date:'Y-m-d' }}" class="w-full border rounded-xl px-3 py-2">
+    </div>
+    <div>
+      <label class="block text-xs text-gray-500 mb-1">Tugash</label>
+      <input type="date" name="date_to" value="{{ date_to|date:'Y-m-d' }}" class="w-full border rounded-xl px-3 py-2">
+    </div>
+    <div>
+      <label class="block text-xs text-gray-500 mb-1">Yil</label>
+      <input type="number" name="year" value="{{ selected_year|default:'' }}" placeholder="2026" class="w-full border rounded-xl px-3 py-2">
+    </div>
+    <div>
+      <label class="block text-xs text-gray-500 mb-1">Oy</label>
+      <select name="month" class="w-full border rounded-xl px-3 py-2">
+        <option value="">Barcha oylar</option>
+        {% for value,label in month_choices %}
+        <option value="{{ value }}" {% if selected_month == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="flex items-end">
+      <button class="w-full md:w-auto px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">Hisobotni yangilash</button>
+    </div>
+  </form>
+  <p class="mt-3 text-xs text-gray-500"><i class="fas fa-circle-info mr-1 text-indigo-500"></i>Yil va oy tanlansa hisobot aynan shu davr bo'yicha chiqadi; oy bo'sh qolsa yillik hisobot olinadi.</p>
+</div>
+
+<div class="bg-white rounded-2xl shadow p-5 mb-6">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+    <h2 class="font-bold text-gray-800">Kategoriya bo'yicha rangli jamlanma</h2>
+    <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-600">{{ date_from }} - {{ date_to }}</span>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-left text-gray-500 border-b">
+          <th class="py-3">Tur</th>
+          <th class="py-3">Kategoriya</th>
+          <th class="py-3">Yozuvlar</th>
+          <th class="py-3">UZS</th>
+          <th class="py-3">USD</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in finance_category_rows %}
+        <tr class="border-b {% if row.entry_type == 'income' %}bg-emerald-50/60{% else %}bg-rose-50/60{% endif %}">
+          <td class="py-3">
+            <span class="px-3 py-1 rounded-full text-xs font-semibold {% if row.entry_type == 'income' %}bg-emerald-100 text-emerald-700{% else %}bg-rose-100 text-rose-700{% endif %}">
+              {% if row.entry_type == 'income' %}Kirim{% else %}Chiqim{% endif %}
+            </span>
+          </td>
+          <td class="py-3 font-black text-gray-800">{{ row.category }}</td>
+          <td class="py-3"><span class="rounded-full bg-white px-3 py-1 font-bold text-gray-700">{{ row.count }}</span></td>
+          <td class="py-3 font-black {% if row.entry_type == 'income' %}text-emerald-700{% else %}text-rose-700{% endif %}">{{ row.UZS|floatformat:0|intcomma }} UZS</td>
+          <td class="py-3 font-black {% if row.entry_type == 'income' %}text-emerald-700{% else %}text-rose-700{% endif %}">{{ row.USD|floatformat:2|intcomma }} USD</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="py-4 text-center text-gray-400">Bu davr uchun kategoriya jamlanmasi yo'q</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="bg-white rounded-2xl shadow p-5">
+  <h2 class="font-bold text-gray-800 mb-4">Oxirgi kirim va chiqimlar</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-left text-gray-500 border-b">
+          <th class="py-3">Sana</th>
+          <th class="py-3">Tur</th>
+          <th class="py-3">Kategoriya</th>
+          <th class="py-3">Hisob</th>
+          <th class="py-3">Holat</th>
+          <th class="py-3">Miqdor</th>
+          <th class="py-3">Amal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in finance_page_obj %}
+        <tr class="border-b">
+          <td class="py-3">{{ item.entry_date }}</td>
+          <td class="py-3">
+            <span class="px-3 py-1 rounded-full text-xs font-bold {% if item.entry_type == 'income' %}bg-emerald-100 text-emerald-700{% else %}bg-rose-100 text-rose-700{% endif %}">{{ item.get_entry_type_display }}</span>
+          </td>
+          <td class="py-3 font-semibold">{{ item.category }}</td>
+          <td class="py-3">{{ item.get_source_display }}</td>
+          <td class="py-3">{{ item.get_status_display }}</td>
+          <td class="py-3 font-black {% if item.entry_type == 'income' %}text-emerald-700{% else %}text-rose-700{% endif %}">{{ item.amount|floatformat:2|intcomma }} {{ item.currency }}</td>
+          <td class="py-3">
+            <div class="flex gap-2">
+              <a href="{% url 'dashboard:finance_edit' item.id %}" class="px-3 py-1 rounded-lg bg-amber-100 text-amber-700">Edit</a>
+              <form method="post" action="{% url 'dashboard:finance_delete' item.id %}">
+                {% csrf_token %}
+                <button type="button" onclick="return openConfirmModal(this.form, 'Moliyaviy yozuvni ochirishni tasdiqlaysizmi?')" class="px-3 py-1 rounded-lg bg-rose-100 text-rose-700">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="py-4 text-gray-400">Moliyaviy yozuvlar yo'q</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if finance_page_obj.paginator.num_pages > 1 %}
+  <div class="flex flex-wrap gap-2 justify-end mt-4">
+    {% if finance_page_obj.has_previous %}
+    <a href="?page={{ finance_page_obj.previous_page_number }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}&year={{ selected_year|default:'' }}&month={{ selected_month|default:'' }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">Oldingi</a>
+    {% endif %}
+    <span class="px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 text-sm">{{ finance_page_obj.number }} / {{ finance_page_obj.paginator.num_pages }}</span>
+    {% if finance_page_obj.has_next %}
+    <a href="?page={{ finance_page_obj.next_page_number }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}&year={{ selected_year|default:'' }}&month={{ selected_month|default:'' }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">Keyingi</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<div id="financeFormCard" class="{% if not edit_item %}hidden{% endif %} fixed inset-0 z-50 overflow-y-auto bg-slate-950/45 p-4">
+  <div class="mx-auto mt-8 max-w-3xl rounded-3xl bg-white p-5 shadow-2xl md:mt-12">
+    <div class="mb-5 flex items-start justify-between gap-4">
+      <div>
+        <h2 class="text-xl font-black text-gray-800">{% if edit_item %}Moliyaviy yozuvni tahrirlash{% else %}Yangi moliyaviy yozuv{% endif %}</h2>
+        <p class="mt-1 text-sm text-gray-500">Kirim yoki chiqimni aniq kategoriya, hisob va sana bilan kiriting.</p>
+      </div>
+      <button type="button" onclick="toggleFinanceForm()" class="rounded-2xl bg-gray-100 px-3 py-2 text-gray-500"><i class="fas fa-xmark"></i></button>
+    </div>
+    <form method="post" action="{% if edit_item %}{% url 'dashboard:finance_edit' edit_item.id %}{% else %}{% url 'dashboard:finance_create' %}{% endif %}" class="grid grid-cols-1 gap-3 md:grid-cols-2">
+      {% csrf_token %}
+      {% for field in finance_form %}
+      <div {% if field.name == "note" %}class="md:col-span-2"{% endif %}>
+        <label class="block text-xs font-semibold text-gray-500 mb-1">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<p class="mt-1 text-[11px] text-gray-400">{{ field.help_text }}</p>{% endif %}
+      </div>
+      {% endfor %}
+      <div class="flex flex-wrap justify-end gap-2 md:col-span-2">
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <button type="button" onclick="toggleFinanceForm()" class="rounded-xl bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700">Bekor qilish</button>
+        <button class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">{% if edit_item %}Yangilash{% else %}Saqlash{% endif %}</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function toggleFinanceForm() {
+    document.getElementById('financeFormCard').classList.toggle('hidden');
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Ishchilar{% endblock %}
+{% block page_title %}Xodimlarni boshqarish{% endblock %}
+{% block page_subtitle %}Ishchi qo'shish, tahrirlash, avans berish va to'lovlar jadvali{% endblock %}
+{% block header_actions %}
+<div class="flex flex-wrap gap-2">
+  <button type="button" onclick="toggleWorkerForm()" class="px-4 py-2 rounded-xl bg-sky-600 text-white text-sm font-semibold"><i class="fas fa-user-plus mr-2"></i>Ishchi qo'shish</button>
+  <button type="button" onclick="toggleAdvanceModal()" class="px-4 py-2 rounded-xl bg-amber-500 text-white text-sm font-semibold"><i class="fas fa-hand-holding-dollar mr-2"></i>Avans berish</button>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 xl:grid-cols-1 gap-6 mb-6">
+  <div class="xl:col-span-2 bg-white rounded-2xl shadow p-5">
+    <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+      <h2 class="font-bold text-gray-800">Ishchilar ro'yxati</h2>
+      <a href="{% url 'dashboard:workers_report_page' %}" class="px-4 py-2 rounded-xl bg-indigo-50 text-indigo-700 text-sm font-semibold">Ishchilar hisobini ochish</a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-gray-500 border-b">
+            <th class="py-3">Ism</th>
+            <th class="py-3">Rol</th>
+            <th class="py-3">Boshlagan</th>
+            <th class="py-3">Oylik kuni</th>
+            <th class="py-3">Oylik</th>
+            <th class="py-3">Shu oy</th>
+            <th class="py-3">Qolgan</th>
+            <th class="py-3">Amal</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in worker_page_obj %}
+          <tr class="border-b">
+            <td class="py-3 font-semibold">{{ item.name }}</td>
+            <td class="py-3">{{ item.role }}</td>
+            <td class="py-3">{{ item.started_at|default:"-" }}</td>
+            <td class="py-3">{{ item.payday_day }}</td>
+            <td class="py-3 font-black text-gray-800">{{ item.salary|floatformat:2|intcomma }} {{ item.currency }}</td>
+            <td class="py-3 font-bold text-sky-700">{{ item.month_paid_uzs|floatformat:0|intcomma }} UZS / {{ item.month_paid_usd|floatformat:2|intcomma }} USD</td>
+            <td class="py-3 {% if item.remaining < 0 %}text-rose-600{% elif item.remaining > 0 %}text-emerald-600{% endif %} font-bold">{{ item.remaining|floatformat:2|intcomma }} {{ item.currency }}</td>
+            <td class="py-3">
+              <div class="flex gap-2">
+                <a href="{% url 'dashboard:worker_edit' item.id %}" class="px-3 py-1 rounded-lg bg-amber-100 text-amber-700">Edit</a>
+                <form method="post" action="{% url 'dashboard:worker_delete' item.id %}">
+                  {% csrf_token %}
+                  <button type="button" onclick="return openConfirmModal(this.form, 'Ishchini ochirishni tasdiqlaysizmi?')" class="px-3 py-1 rounded-lg bg-rose-100 text-rose-700">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" class="py-4 text-gray-400">Ishchilar yo'q</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if worker_page_obj.paginator.num_pages > 1 %}
+    <div class="flex flex-wrap gap-2 justify-end mt-4">
+      {% if worker_page_obj.has_previous %}
+      <a href="?workers_page={{ worker_page_obj.previous_page_number }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">Oldingi</a>
+      {% endif %}
+      <span class="px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 text-sm">{{ worker_page_obj.number }} / {{ worker_page_obj.paginator.num_pages }}</span>
+      {% if worker_page_obj.has_next %}
+      <a href="?workers_page={{ worker_page_obj.next_page_number }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">Keyingi</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<div class="bg-white rounded-2xl shadow p-5">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+    <h2 class="font-bold text-gray-800">Berilgan summalar jadvali</h2>
+    <span class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-700">Avans va ish haqi nazorati</span>
+  </div>
+  <form method="get" class="mb-5 grid grid-cols-1 gap-3 md:grid-cols-6">
+    <div>
+      <label class="block text-xs text-gray-500 mb-1">Ishchi</label>
+      <select name="worker_id" class="w-full border rounded-xl px-3 py-2">
+        <option value="">Barcha ishchilar</option>
+        {% for worker in workers %}
+        <option value="{{ worker.id }}" {% if selected_worker_id == worker.id %}selected{% endif %}>{{ worker.full_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="block text-xs text-gray-500 mb-1">Boshlanish</label>
+      <input type="date" name="payment_date_from" value="{{ payment_date_from|date:'Y-m-d' }}" class="w-full border rounded-xl px-3 py-2">
+    </div>
+    <div>
+      <label class="block text-xs text-gray-500 mb-1">Tugash</label>
+      <input type="date" name="payment_date_to" value="{{ payment_date_to|date:'Y-m-d' }}" class="w-full border rounded-xl px-3 py-2">
+    </div>
+    <div>
+      <label class="block text-xs text-gray-500 mb-1">Yil</label>
+      <input type="number" name="payment_year" value="{{ payment_year|default:'' }}" placeholder="2026" class="w-full border rounded-xl px-3 py-2">
+    </div>
+    <div>
+      <label class="block text-xs text-gray-500 mb-1">Oy</label>
+      <select name="payment_month" class="w-full border rounded-xl px-3 py-2">
+        <option value="">Barcha oylar</option>
+        {% for value,label in month_choices %}
+        <option value="{{ value }}" {% if payment_month == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="flex items-end">
+      <button class="w-full rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white">Filtrlash</button>
+    </div>
+  </form>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="text-left text-gray-500 border-b">
+          <th class="py-3">Sana</th>
+          <th class="py-3">Ishchi</th>
+          <th class="py-3">Turi</th>
+          <th class="py-3">Oy</th>
+          <th class="py-3">Miqdor</th>
+          <th class="py-3">Izoh</th>
+          <th class="py-3">Amal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in payments_page_obj %}
+        <tr class="border-b">
+          <td class="py-3">{{ item.advance_date }}</td>
+          <td class="py-3">{{ item.worker.full_name }}</td>
+          <td class="py-3">{{ item.get_payment_type_display }}</td>
+          <td class="py-3">{{ item.month_reference|default:"-" }}</td>
+          <td class="py-3 font-black text-indigo-700">{{ item.amount|floatformat:2|intcomma }} {{ item.currency }}</td>
+          <td class="py-3">{{ item.note|default:"-" }}</td>
+          <td class="py-3">
+            <div class="flex gap-2">
+              <a href="{% url 'dashboard:worker_payment_edit' item.id %}" class="px-3 py-1 rounded-lg bg-amber-100 text-amber-700">Edit</a>
+              <form method="post" action="{% url 'dashboard:worker_payment_delete' item.id %}">
+                {% csrf_token %}
+                <button type="button" onclick="return openConfirmModal(this.form, 'Tolov yozuvini ochirishni tasdiqlaysizmi?')" class="px-3 py-1 rounded-lg bg-rose-100 text-rose-700">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="py-4 text-gray-400">To'lovlar yo'q</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if payments_page_obj.paginator.num_pages > 1 %}
+  <div class="flex flex-wrap gap-2 justify-end mt-4">
+    {% if payments_page_obj.has_previous %}
+      <a href="?page={{ payments_page_obj.previous_page_number }}&worker_id={{ selected_worker_id|default:'' }}&payment_date_from={{ payment_date_from|date:'Y-m-d' }}&payment_date_to={{ payment_date_to|date:'Y-m-d' }}&payment_year={{ payment_year|default:'' }}&payment_month={{ payment_month|default:'' }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">Oldingi</a>
+    {% endif %}
+    <span class="px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 text-sm">{{ payments_page_obj.number }} / {{ payments_page_obj.paginator.num_pages }}</span>
+    {% if payments_page_obj.has_next %}
+      <a href="?page={{ payments_page_obj.next_page_number }}&worker_id={{ selected_worker_id|default:'' }}&payment_date_from={{ payment_date_from|date:'Y-m-d' }}&payment_date_to={{ payment_date_to|date:'Y-m-d' }}&payment_year={{ payment_year|default:'' }}&payment_month={{ payment_month|default:'' }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">Keyingi</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+<div id="workerFormCard" class="{% if not edit_item %}hidden{% endif %} fixed inset-0 bg-black/40 p-4 z-50 overflow-y-auto">
+  <div class="max-w-2xl mx-auto mt-10 bg-white rounded-3xl shadow-2xl p-5">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-bold text-gray-800">{% if edit_item %}Ishchini tahrirlash{% else %}Yangi ishchi{% endif %}</h2>
+      <button type="button" onclick="toggleWorkerForm()" class="text-gray-500"><i class="fas fa-xmark"></i></button>
+    </div>
+    <form method="post" action="{% if edit_item %}{% url 'dashboard:worker_edit' edit_item.id %}{% else %}{% url 'dashboard:worker_create' %}{% endif %}" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}">
+      {% for field in worker_form %}
+      <div {% if field.name == "note" %}class="md:col-span-2"{% endif %}>
+        <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div class="text-[11px] text-gray-400 mt-1">{{ field.help_text }}</div>{% endif %}
+      </div>
+      {% endfor %}
+      <div class="md:col-span-2">
+        <button class="px-4 py-2 rounded-xl bg-sky-600 text-white">{% if edit_item %}Yangilash{% else %}Saqlash{% endif %}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="advanceModal" class="hidden fixed inset-0 bg-black/40 p-4 z-50 overflow-y-auto">
+  <div class="max-w-md mx-auto mt-10 bg-white rounded-3xl shadow-2xl p-5">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold">{% if payment_edit_item %}To'lovni tahrirlash{% else %}Avans / ish haqi berish{% endif %}</h3>
+      <button type="button" onclick="toggleAdvanceModal()" class="text-gray-500"><i class="fas fa-xmark"></i></button>
+    </div>
+    <form method="post" action="{% if payment_edit_item %}{% url 'dashboard:worker_payment_edit' payment_edit_item.id %}{% else %}{% url 'dashboard:worker_advance_create' %}{% endif %}" class="space-y-3">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}">
+      {% for field in advance_form %}
+      <div>
+        <label class="block text-xs text-gray-500 mb-1">{{ field.label }}</label>
+        {{ field }}
+      </div>
+      {% endfor %}
+      <button class="w-full px-4 py-2 rounded-xl bg-amber-500 text-white">{% if payment_edit_item %}Yangilash{% else %}To'lovni saqlash{% endif %}</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function toggleWorkerForm() {
+    document.getElementById('workerFormCard').classList.toggle('hidden');
+  }
+  function toggleAdvanceModal() {
+    document.getElementById('advanceModal').classList.toggle('hidden');
+  }
+  {% if payment_edit_item %}
+  document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('advanceModal').classList.remove('hidden');
+  });
+  {% endif %}
+</script>
+{% endblock %}

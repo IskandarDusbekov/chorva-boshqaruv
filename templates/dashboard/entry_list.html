@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block header %}So'nggi yozuvlar{% endblock %}
+{% block subtitle %}Oxirgi 30 kunlik sut, moliya va ishchilar ko'rinishi.{% endblock %}
+
+{% block content %}
+<div class="grid grid-2">
+    <div class="card">
+        <h2 class="section-title">Sut yozuvlari</h2>
+        <div class="list">
+            {% for item in overview.recent_milk_records %}
+            <div class="list-item">
+                <div class="row"><strong>{{ item.record_date }}</strong><span class="badge">{{ item.total_liters }} litr</span></div>
+                <div class="row"><span class="muted">Ertalab</span><strong>{{ item.morning_liters }} L</strong></div>
+                <div class="row"><span class="muted">Kechqurun</span><strong>{{ item.evening_liters }} L</strong></div>
+            </div>
+            {% empty %}
+            <div class="list-item muted">Sut yozuvlari hali yo'q.</div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="card">
+        <h2 class="section-title">Moliyaviy yozuvlar</h2>
+        <div class="list">
+            {% for item in finances %}
+            <div class="list-item">
+                <div class="row"><strong>{{ item.category }}</strong><span class="badge">{{ item.get_entry_type_display }}</span></div>
+                <div class="row"><span class="muted">{{ item.entry_date }} | {{ item.get_source_display }}</span><strong>{{ item.amount }} {{ item.currency }}</strong></div>
+            </div>
+            {% empty %}
+            <div class="list-item muted">Moliyaviy yozuvlar hali yo'q.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

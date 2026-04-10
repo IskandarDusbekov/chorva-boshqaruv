@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block header %}Sut yozuvi{% endblock %}
+{% block subtitle %}Ertalabki va kechki sut hajmini kiritish oynasi.{% endblock %}
+
+{% block content %}
+<div class="card">
+    <form class="inline-form" method="post">
+        {% csrf_token %}
+        <div class="fields">
+            {% for field in form %}
+            <div {% if field.name == "note" %}style="grid-column:1 / -1;"{% endif %}>
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+            </div>
+            {% endfor %}
+        </div>
+        <button type="submit">Saqlash</button>
+    </form>
+</div>
+{% endblock %}
