@@ -3,18 +3,19 @@ from django.conf import settings
 
 
 def main_menu_keyboard(role):
+    base_url = settings.SITE_BASE_URL.rstrip("/")
     buttons = [
         [KeyboardButton(text="Default pulni olish")],
         [KeyboardButton(text="📝 Kiritish"), KeyboardButton(text="📊 Hisobotlar")],
         [KeyboardButton(text="🌐 Saytga o'tish")],
     ]
-    if role in {"admin", "manager"}:
+    if role in {"admin", "manager"} and base_url.startswith("https://"):
         buttons.insert(
             1,
             [
                 KeyboardButton(
                     text="🛡️ Mini Appni ochish",
-                    web_app=WebAppInfo(url=f"{settings.SITE_BASE_URL.rstrip('/')}/auth/telegram-mini-app/"),
+                    web_app=WebAppInfo(url=f"{base_url}/auth/telegram-mini-app/"),
                 )
             ],
         )
