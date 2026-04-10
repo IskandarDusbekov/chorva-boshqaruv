@@ -17,7 +17,8 @@ chmod 600 .env
 ```
 
 3. Faqat `.env`ni to'ldiring.
-4. Production commandlarda settingsni aniq ko'rsating:
+4. `ADMIN_URL`ni oddiy `/admin/` qilmay, taxmin qilish qiyinroq path qiling.
+5. Production commandlarda settingsni aniq ko'rsating:
 
 ```bash
 export DJANGO_SETTINGS_MODULE=config.settings.prod
@@ -99,5 +100,6 @@ Buni cron yoki systemd timerga qo'ying. Excel ichida dashboard, sut, moliya, xod
 - `.env` commit qilinmaydi.
 - Bot token leak bo'lsa BotFather orqali darhol rotate qilinadi.
 - Server firewall: faqat 80/443 va SSH kerakli IPga.
+- `ADMIN_URL` maxfiyroq path bo'lsin, masalan `botgate-admin-9284/`.
 - Database port public internetga ochilmaydi.
 - Backup Excel hisobot haftalik/oylik yuboriladi.

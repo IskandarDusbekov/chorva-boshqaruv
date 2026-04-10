@@ -127,11 +127,13 @@ async def password_handler(message: Message, state: FSMContext):
 
     data = await state.get_data()
     username = data.get("username")
+    phone_number = data.get("phone_number", "")
 
     try:
         user, _session = await sync_to_async(authenticate_first_login)(
             username=username,
             password=password,
+            phone_number=phone_number,
             telegram_id=message.from_user.id,
             chat_id=message.chat.id,
             device_note="telegram_bot",

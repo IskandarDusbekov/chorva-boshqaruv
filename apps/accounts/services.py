@@ -13,6 +13,7 @@ from django.utils import timezone
 
 from .models import AccessLink, AuditLog, TelegramSession, User, UserRole
 from .selectors import get_active_allowed_contact, get_user_by_telegram_id, get_valid_access_link
+from .utils import phone_number_candidates
 
 
 def check_whitelist(phone_number):
@@ -58,10 +59,12 @@ def reset_failed_login_attempts(telegram_id):
 
 
 @transaction.atomic
-def authenticate_first_login(*, username, password, telegram_id, chat_id, device_note=""):
+def authenticate_first_login(*, username, password, telegram_id, chat_id, phone_number="", device_note=""):
     user = authenticate(username=username, password=password)
     if not user or not user.is_active:
         raise PermissionDenied("Username yoki parol noto'g'ri.")
+    if phone_number and user.phone_number not in phone_number_candidates(phone_number):
+        raise PermissionDenied("Username bu telefon raqamga tegishli emas.")
     if user.telegram_id and user.telegram_id != telegram_id:
         raise PermissionDenied("Bu foydalanuvchi boshqa Telegram akkauntga bog'langan.")
 

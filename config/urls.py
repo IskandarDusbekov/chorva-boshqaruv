@@ -9,7 +9,7 @@ admin.site.index_title = "Tizim boshqaruvi"
 
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path(settings.ADMIN_URL, admin.site.urls),
     path("auth/", include("apps.accounts.urls")),
     path("panel/", include("apps.dashboard.urls")),
 ]

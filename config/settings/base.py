@@ -99,6 +99,7 @@ FIRST_LOGIN_MAX_ATTEMPTS = 3
 FIRST_LOGIN_LOCK_MINUTES = 10
 SITE_BASE_URL = os.getenv("SITE_BASE_URL", "http://127.0.0.1:8000")
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
+ADMIN_URL = os.getenv("ADMIN_URL", "botgate-admin/").strip("/") + "/"
 REPORT_TELEGRAM_CHAT_ID = os.getenv("REPORT_TELEGRAM_CHAT_ID", "")
 REPORT_EMAIL_TO = [email.strip() for email in os.getenv("REPORT_EMAIL_TO", "").split(",") if email.strip()]
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "BotGate Ferma <noreply@example.com>")
