@@ -207,52 +207,89 @@
 <div class="bg-white rounded-2xl shadow p-5 mt-6">
   <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
     <div>
-      <h2 class="font-bold text-gray-800">Oxirgi amallar</h2>
-      <p class="text-sm text-gray-400">Kim nima qo'shdi, tahrirladi, o'chirdi yoki hisobga o'tkazdi</p>
+      <h2 class="font-bold text-gray-800">Oxirgi amallar tarixi</h2>
+      <p class="text-sm text-gray-400">Kim nima qildi, qaysi yozuv o'zgardi va qancha summa/litr bilan bog'liq</p>
     </div>
     <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">Audit log</span>
   </div>
   <div class="space-y-3">
     {% for log in recent_logs %}
-    <div class="flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
-      <div class="flex gap-3">
-        <div class="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl
-          {% if 'deleted' in log.action %}bg-rose-100 text-rose-600{% elif 'updated' in log.action %}bg-amber-100 text-amber-600{% elif 'received' in log.action %}bg-sky-100 text-sky-600{% else %}bg-emerald-100 text-emerald-600{% endif %}">
-          {% if 'deleted' in log.action %}<i class="fas fa-trash"></i>{% elif 'updated' in log.action %}<i class="fas fa-pen"></i>{% elif 'received' in log.action %}<i class="fas fa-money-bill-transfer"></i>{% else %}<i class="fas fa-plus"></i>{% endif %}
+    <div class="rounded-3xl border border-slate-100 bg-slate-50 p-4">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div class="flex min-w-0 gap-3">
+          <div class="mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl
+            {% if 'deleted' in log.action %}bg-rose-100 text-rose-600{% elif 'updated' in log.action %}bg-amber-100 text-amber-600{% elif 'received' in log.action %}bg-sky-100 text-sky-600{% else %}bg-emerald-100 text-emerald-600{% endif %}">
+            {% if 'deleted' in log.action %}<i class="fas fa-trash"></i>{% elif 'updated' in log.action %}<i class="fas fa-pen"></i>{% elif 'received' in log.action %}<i class="fas fa-money-bill-transfer"></i>{% else %}<i class="fas fa-plus"></i>{% endif %}
+          </div>
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="font-black text-slate-800">
+                {% if log.action == 'milk_record_created' %}Sut yozuvi qo'shildi
+                {% elif log.action == 'milk_record_updated' %}Sut yozuvi tahrirlandi
+                {% elif log.action == 'milk_record_deleted' %}Sut yozuvi o'chirildi
+                {% elif log.action == 'milk_price_created' %}Sut narxi belgilandi
+                {% elif log.action == 'finance_entry_created' %}Kirim/chiqim yozuvi qo'shildi
+                {% elif log.action == 'finance_entry_updated' %}Kirim/chiqim yozuvi tahrirlandi
+                {% elif log.action == 'finance_entry_deleted' %}Kirim/chiqim yozuvi o'chirildi
+                {% elif log.action == 'worker_created' %}Yangi ishchi qo'shildi
+                {% elif log.action == 'worker_updated' %}Ishchi ma'lumoti tahrirlandi
+                {% elif log.action == 'worker_deleted' %}Ishchi o'chirildi
+                {% elif log.action == 'worker_payment_created' %}Ishchiga to'lov berildi
+                {% elif log.action == 'worker_payment_updated' %}Ishchi to'lovi tahrirlandi
+                {% elif log.action == 'worker_payment_deleted' %}Ishchi to'lovi o'chirildi
+                {% elif log.action == 'milk_payment_received' %}Default sut puli ichki hisobga o'tkazildi
+                {% elif log.action == 'web_login_via_access_link' %}Panelga vaqtinchalik link orqali kirildi
+                {% elif log.action == 'web_logout' %}Paneldan chiqildi
+                {% elif log.action == 'access_link_created' %}Vaqtinchalik panel havolasi yaratildi
+                {% elif log.action == 'access_link_used' %}Vaqtinchalik panel havolasi ishlatildi
+                {% elif log.action == 'first_login_verified' %}Telegram akkaunt birinchi marta tasdiqlandi
+                {% elif log.action == 'mini_app_verified' %}Mini App orqali kirish tasdiqlandi
+                {% else %}{{ log.action }}{% endif %}
+              </div>
+              {% if log.meta.via == 'telegram_bot' %}
+              <span class="rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-bold text-sky-700">Bot orqali</span>
+              {% else %}
+              <span class="rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-slate-500 ring-1 ring-slate-200">Web panel</span>
+              {% endif %}
+            </div>
+            <div class="mt-1 text-xs text-slate-500">
+              <span class="font-semibold text-slate-700">{{ log.user.full_name|default:"Tizim" }}</span>
+              tomonidan bajarildi · {{ log.created_at|date:"d.m.Y H:i" }}
+            </div>
+          </div>
         </div>
-        <div>
-          <div class="font-bold text-slate-800">
-            {% if log.action == 'milk_record_created' %}Sut yozuvi qo'shildi
-            {% elif log.action == 'milk_record_updated' %}Sut yozuvi tahrirlandi
-            {% elif log.action == 'milk_record_deleted' %}Sut yozuvi o'chirildi
-            {% elif log.action == 'milk_price_created' %}Sut narxi qo'shildi
-            {% elif log.action == 'finance_entry_created' %}Moliya yozuvi qo'shildi
-            {% elif log.action == 'finance_entry_updated' %}Moliya yozuvi tahrirlandi
-            {% elif log.action == 'finance_entry_deleted' %}Moliya yozuvi o'chirildi
-            {% elif log.action == 'worker_created' %}Ishchi qo'shildi
-            {% elif log.action == 'worker_updated' %}Ishchi tahrirlandi
-            {% elif log.action == 'worker_deleted' %}Ishchi o'chirildi
-            {% elif log.action == 'worker_payment_created' %}Ishchi to'lovi qo'shildi
-            {% elif log.action == 'worker_payment_updated' %}Ishchi to'lovi tahrirlandi
-            {% elif log.action == 'worker_payment_deleted' %}Ishchi to'lovi o'chirildi
-            {% elif log.action == 'milk_payment_received' %}Default sut puli hisobga o'tkazildi
-            {% else %}{{ log.action }}{% endif %}
-          </div>
-          <div class="mt-1 text-xs text-slate-500">
-            {{ log.object_type }} #{{ log.object_id }} · {{ log.user.full_name|default:"Tizim" }}
-          </div>
-          {% if log.meta %}
-          <div class="mt-2 text-xs text-slate-500">
-            {% if log.meta.name %}{{ log.meta.name }}{% endif %}
-            {% if log.meta.category %}{{ log.meta.category }}{% endif %}
-            {% if log.meta.worker %}{{ log.meta.worker }}{% endif %}
-            {% if log.meta.amount %} · {{ log.meta.amount }} {{ log.meta.currency }}{% endif %}
-            {% if log.meta.liters %} · {{ log.meta.liters }} L{% endif %}
-          </div>
-          {% endif %}
+        <div class="rounded-2xl bg-white px-3 py-2 text-right text-[11px] font-bold text-slate-500 ring-1 ring-slate-200">
+          {{ log.object_type|default:"Amal" }} #{{ log.object_id|default:"-" }}
         </div>
       </div>
-      <div class="text-right text-xs font-semibold text-slate-400">{{ log.created_at|date:"d.m.Y H:i" }}</div>
+      {% if log.meta %}
+      <div class="mt-3 flex flex-wrap gap-2 pl-0 md:pl-14">
+        {% if log.meta.name %}
+        <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200"><i class="fas fa-user mr-1 text-slate-400"></i>{{ log.meta.name }}</span>
+        {% endif %}
+        {% if log.meta.worker %}
+        <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200"><i class="fas fa-user-tie mr-1 text-slate-400"></i>{{ log.meta.worker }}</span>
+        {% endif %}
+        {% if log.meta.category %}
+        <span class="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700 ring-1 ring-slate-200"><i class="fas fa-tag mr-1 text-slate-400"></i>{{ log.meta.category }}</span>
+        {% endif %}
+        {% if log.meta.amount %}
+        <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 ring-1 ring-emerald-100"><i class="fas fa-money-bill mr-1"></i>{{ log.meta.amount }} {{ log.meta.currency }}</span>
+        {% endif %}
+        {% if log.meta.liters %}
+        <span class="rounded-full bg-sky-50 px-3 py-1 text-xs font-black text-sky-700 ring-1 ring-sky-100"><i class="fas fa-glass-water mr-1"></i>{{ log.meta.liters }} L</span>
+        {% endif %}
+        {% if log.meta.date %}
+        <span class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-100"><i class="fas fa-calendar mr-1"></i>{{ log.meta.date }}</span>
+        {% endif %}
+        {% if log.meta.received_at %}
+        <span class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-100"><i class="fas fa-calendar-check mr-1"></i>{{ log.meta.received_at }}</span>
+        {% endif %}
+        {% if log.meta.source %}
+        <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 ring-1 ring-amber-100"><i class="fas fa-building-columns mr-1"></i>{{ log.meta.source }}</span>
+        {% endif %}
+      </div>
+      {% endif %}
     </div>
     {% empty %}
     <div class="rounded-2xl bg-slate-50 p-5 text-center text-sm text-slate-400">Hali audit log yo'q</div>
