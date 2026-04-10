@@ -138,17 +138,7 @@
     </table>
   </div>
 
-  {% if finance_page_obj.paginator.num_pages > 1 %}
-  <div class="flex flex-wrap gap-2 justify-end mt-4">
-    {% if finance_page_obj.has_previous %}
-    <a href="?page={{ finance_page_obj.previous_page_number }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}&year={{ selected_year|default:'' }}&month={{ selected_month|default:'' }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">Oldingi</a>
-    {% endif %}
-    <span class="px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 text-sm">{{ finance_page_obj.number }} / {{ finance_page_obj.paginator.num_pages }}</span>
-    {% if finance_page_obj.has_next %}
-    <a href="?page={{ finance_page_obj.next_page_number }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}&year={{ selected_year|default:'' }}&month={{ selected_month|default:'' }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">Keyingi</a>
-    {% endif %}
-  </div>
-  {% endif %}
+  {% include "dashboard/partials/pagination.html" with page_obj=finance_page_obj page_param="page" query_suffix=finance_query_suffix %}
 </div>
 
 <div id="financeFormCard" class="{% if not edit_item %}hidden{% endif %} fixed inset-0 z-50 overflow-y-auto bg-slate-950/45 p-4">

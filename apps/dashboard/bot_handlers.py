@@ -9,7 +9,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from apps.accounts.selectors import get_user_by_telegram_id
-from apps.accounts.services import generate_access_link, get_panel_target_path
+from apps.accounts.services import create_audit_log, generate_access_link, get_panel_target_path
 from bot.keyboards import (
     entry_menu_keyboard,
     finance_currency_keyboard,
@@ -193,6 +193,19 @@ async def receive_pending_milk_callback(callback: CallbackQuery):
     if not entry:
         await callback.answer("Yozuv topilmadi yoki allaqachon o'tkazilgan.", show_alert=True)
         return
+    await sync_to_async(create_audit_log)(
+        user=user,
+        action="milk_payment_received",
+        object_type="FinanceEntry",
+        object_id=str(entry.pk),
+        meta={
+            "amount": str(entry.amount),
+            "currency": entry.currency,
+            "source": entry.source,
+            "received_at": str(entry.received_at),
+            "via": "telegram_bot",
+        },
+    )
 
     await callback.message.edit_text(
         f"Pul ichki hisobga o'tkazildi.\n"
@@ -341,6 +354,17 @@ async def save_milk_entry(message: Message, state: FSMContext):
         note="Bot orqali tezkor kiritildi",
     )
     pending_entry = await sync_to_async(create_milk_income_from_record)(user=user, milk_record=milk_record)
+    await sync_to_async(create_audit_log)(
+        user=user,
+        action="milk_record_created",
+        object_type="MilkRecord",
+        object_id=str(milk_record.pk),
+        meta={
+            "date": str(milk_record.record_date),
+            "liters": str(milk_record.total_liters),
+            "via": "telegram_bot",
+        },
+    )
     shift_name = "ertalabki" if data["shift"] == "morning" else "kunduzgi / kechki"
     await _return_main_menu(
         message,
@@ -404,6 +428,19 @@ async def save_finance_entry(message: Message, state: FSMContext):
         source=data["source"],
         entry_date=data["record_date"],
         note=note,
+    )
+    await sync_to_async(create_audit_log)(
+        user=user,
+        action="finance_entry_created",
+        object_type="FinanceEntry",
+        object_id=str(entry.pk),
+        meta={
+            "type": entry.entry_type,
+            "category": entry.category,
+            "amount": str(entry.amount),
+            "currency": entry.currency,
+            "via": "telegram_bot",
+        },
     )
     entry_type_name = "Kirim" if entry.entry_type == FinanceTypeChoices.INCOME else "Chiqim"
     source_name = "Ichki hisob" if entry.source == AccountSourceChoices.INTERNAL else "Tashqi hisob"

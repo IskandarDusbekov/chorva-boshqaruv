@@ -82,17 +82,7 @@
         </tbody>
       </table>
     </div>
-    {% if milk_page_obj.paginator.num_pages > 1 %}
-    <div class="flex flex-wrap gap-2 justify-end mt-4">
-      {% if milk_page_obj.has_previous %}
-      <a href="?page={{ milk_page_obj.previous_page_number }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">Oldingi</a>
-      {% endif %}
-      <span class="px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 text-sm">{{ milk_page_obj.number }} / {{ milk_page_obj.paginator.num_pages }}</span>
-      {% if milk_page_obj.has_next %}
-      <a href="?page={{ milk_page_obj.next_page_number }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">Keyingi</a>
-      {% endif %}
-    </div>
-    {% endif %}
+    {% include "dashboard/partials/pagination.html" with page_obj=milk_page_obj page_param="page" query_suffix=date_query_suffix %}
   </div>
   <div class="bg-white rounded-2xl shadow p-5">
     <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fas fa-circle-info text-sky-500"></i> Qisqa eslatma</h2>
@@ -125,17 +115,7 @@
     <div class="text-sm text-gray-400">Kutilayotgan sut to'lovlari yo'q</div>
     {% endfor %}
   </div>
-  {% if pending_page_obj.paginator.num_pages > 1 %}
-  <div class="flex flex-wrap gap-2 justify-end mt-4">
-    {% if pending_page_obj.has_previous %}
-    <a href="?pending_page={{ pending_page_obj.previous_page_number }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">Oldingi</a>
-    {% endif %}
-    <span class="px-3 py-2 rounded-lg bg-sky-50 text-sky-700 text-sm">{{ pending_page_obj.number }} / {{ pending_page_obj.paginator.num_pages }}</span>
-    {% if pending_page_obj.has_next %}
-    <a href="?pending_page={{ pending_page_obj.next_page_number }}&date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">Keyingi</a>
-    {% endif %}
-  </div>
-  {% endif %}
+  {% include "dashboard/partials/pagination.html" with page_obj=pending_page_obj page_param="pending_page" query_suffix=date_query_suffix %}
 </div>
 
 <div id="priceModal" class="hidden fixed inset-0 bg-black/40 p-4 z-50">

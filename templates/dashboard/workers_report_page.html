@@ -103,17 +103,7 @@
     </table>
   </div>
 
-  {% if worker_page_obj.paginator.num_pages > 1 %}
-  <div class="flex flex-wrap gap-2 justify-end mt-4">
-    {% if worker_page_obj.has_previous %}
-    <a href="?page={{ worker_page_obj.previous_page_number }}&worker_id={{ selected_worker_id|default:'' }}&payment_date_from={{ payment_date_from|date:'Y-m-d' }}&payment_date_to={{ payment_date_to|date:'Y-m-d' }}&payment_year={{ payment_year|default:'' }}&payment_month={{ payment_month|default:'' }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">Oldingi</a>
-    {% endif %}
-    <span class="px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 text-sm">{{ worker_page_obj.number }} / {{ worker_page_obj.paginator.num_pages }}</span>
-    {% if worker_page_obj.has_next %}
-    <a href="?page={{ worker_page_obj.next_page_number }}&worker_id={{ selected_worker_id|default:'' }}&payment_date_from={{ payment_date_from|date:'Y-m-d' }}&payment_date_to={{ payment_date_to|date:'Y-m-d' }}&payment_year={{ payment_year|default:'' }}&payment_month={{ payment_month|default:'' }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">Keyingi</a>
-    {% endif %}
-  </div>
-  {% endif %}
+  {% include "dashboard/partials/pagination.html" with page_obj=worker_page_obj page_param="page" query_suffix=payment_query_suffix %}
 </div>
 
 <div class="bg-white rounded-2xl shadow p-5 mt-6">
@@ -154,16 +144,6 @@
       </tbody>
     </table>
   </div>
-  {% if payment_page_obj.paginator.num_pages > 1 %}
-  <div class="flex flex-wrap gap-2 justify-end mt-4">
-    {% if payment_page_obj.has_previous %}
-    <a href="?payment_page={{ payment_page_obj.previous_page_number }}&worker_id={{ selected_worker_id|default:'' }}&payment_date_from={{ payment_date_from|date:'Y-m-d' }}&payment_date_to={{ payment_date_to|date:'Y-m-d' }}&payment_year={{ payment_year|default:'' }}&payment_month={{ payment_month|default:'' }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">Oldingi</a>
-    {% endif %}
-    <span class="px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 text-sm">{{ payment_page_obj.number }} / {{ payment_page_obj.paginator.num_pages }}</span>
-    {% if payment_page_obj.has_next %}
-    <a href="?payment_page={{ payment_page_obj.next_page_number }}&worker_id={{ selected_worker_id|default:'' }}&payment_date_from={{ payment_date_from|date:'Y-m-d' }}&payment_date_to={{ payment_date_to|date:'Y-m-d' }}&payment_year={{ payment_year|default:'' }}&payment_month={{ payment_month|default:'' }}" class="px-3 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm">Keyingi</a>
-    {% endif %}
-  </div>
-  {% endif %}
+  {% include "dashboard/partials/pagination.html" with page_obj=payment_page_obj page_param="payment_page" query_suffix=payment_query_suffix %}
 </div>
 {% endblock %}

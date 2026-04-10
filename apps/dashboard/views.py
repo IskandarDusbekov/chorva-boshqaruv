@@ -8,7 +8,9 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from apps.accounts.models import AuditLog
 from apps.accounts.models import UserRole
+from apps.accounts.services import create_audit_log
 
 from .forms import FinanceEntryForm, MilkPriceForm, MilkRecordForm, WorkerAdvanceForm, WorkerForm
 from .models import AccountSourceChoices, FinanceEntry, FinanceStatusChoices, MilkRecord, Worker, WorkerAdvance
@@ -89,6 +91,39 @@ def _apply_year_month_period(date_from, date_to, year=None, month=None):
     return date_from, date_to
 
 
+def _date_range_query(date_from, date_to):
+    return f"&date_from={date_from:%Y-%m-%d}&date_to={date_to:%Y-%m-%d}"
+
+
+def _finance_query(date_from, date_to, year=None, month=None):
+    return (
+        f"&date_from={date_from:%Y-%m-%d}&date_to={date_to:%Y-%m-%d}"
+        f"&year={year or ''}&month={month or ''}"
+    )
+
+
+def _payment_query(date_from, date_to, year=None, month=None, worker_id=None):
+    return (
+        f"&worker_id={worker_id or ''}"
+        f"&payment_date_from={date_from:%Y-%m-%d}&payment_date_to={date_to:%Y-%m-%d}"
+        f"&payment_year={year or ''}&payment_month={month or ''}"
+    )
+
+
+def _audit_action(user, action, object_type, object_id="", meta=None):
+    create_audit_log(
+        user=user,
+        action=action,
+        object_type=object_type,
+        object_id=str(object_id or ""),
+        meta=meta or {},
+    )
+
+
+def _recent_logs(limit=12):
+    return AuditLog.objects.select_related("user").order_by("-created_at")[:limit]
+
+
 @login_required
 def home(request):
     today = _today()
@@ -101,11 +136,13 @@ def home(request):
         "worker_payroll": get_worker_payroll_summary(),
         "date_from": date_from,
         "date_to": date_to,
+        "date_query_suffix": _date_range_query(date_from, date_to),
         "milk_price_form": MilkPriceForm(initial={"effective_from": today}),
         "milk_form": MilkRecordForm(initial={"record_date": today}),
         "finance_form": FinanceEntryForm(initial={"entry_date": today}),
         "worker_form": WorkerForm(),
         "advance_form": WorkerAdvanceForm(initial={"advance_date": today, "month_reference": today.replace(day=1)}),
+        "recent_logs": _recent_logs(),
         "role": request.user.role,
         "nav_active": "home",
     }
@@ -123,6 +160,7 @@ def milk_page(request):
         "stats": stats,
         "date_from": date_from,
         "date_to": date_to,
+        "date_query_suffix": _date_range_query(date_from, date_to),
         "milk_form": MilkRecordForm(initial={"record_date": today}),
         "milk_price_form": MilkPriceForm(initial={"effective_from": today}),
         "milk_page_obj": Paginator(milk_records, 10).get_page(request.GET.get("page")),
@@ -150,6 +188,13 @@ def entry_create(request):
         if form.is_valid():
             milk_record = create_milk_record(user=request.user, **form.cleaned_data)
             pending_entry = create_milk_income_from_record(user=request.user, milk_record=milk_record)
+            _audit_action(
+                request.user,
+                "milk_record_created",
+                "MilkRecord",
+                milk_record.pk,
+                {"date": str(milk_record.record_date), "liters": str(milk_record.total_liters)},
+            )
             if pending_entry.amount > 0:
                 messages.success(request, "Sut yozuvi saqlandi va default hisobga kutilayotgan to'lov sifatida qo'shildi.")
             else:
@@ -167,6 +212,13 @@ def milk_edit(request, pk):
         if form.is_valid():
             create_milk_record(user=request.user, **form.cleaned_data)
             create_milk_income_from_record(user=request.user, milk_record=item)
+            _audit_action(
+                request.user,
+                "milk_record_updated",
+                "MilkRecord",
+                item.pk,
+                {"date": str(item.record_date), "liters": str(item.total_liters)},
+            )
             return redirect("dashboard:milk_page")
     else:
         form = MilkRecordForm(instance=item)
@@ -177,6 +229,7 @@ def milk_edit(request, pk):
         "stats": stats,
         "date_from": today - timedelta(days=30),
         "date_to": today,
+        "date_query_suffix": _date_range_query(today - timedelta(days=30), today),
         "milk_form": form,
         "milk_price_form": MilkPriceForm(initial={"effective_from": today}),
         "milk_page_obj": Paginator(milk_records, 10).get_page(request.GET.get("page")),
@@ -194,6 +247,13 @@ def milk_edit(request, pk):
 def milk_delete(request, pk):
     item = get_object_or_404(MilkRecord, pk=pk)
     if request.method == "POST":
+        _audit_action(
+            request.user,
+            "milk_record_deleted",
+            "MilkRecord",
+            item.pk,
+            {"date": str(item.record_date), "liters": str(item.total_liters)},
+        )
         FinanceEntry.objects.filter(related_milk_record=item).delete()
         item.delete()
     return redirect("dashboard:milk_page")
@@ -204,7 +264,14 @@ def milk_price_create(request):
     if request.method == "POST":
         form = MilkPriceForm(request.POST)
         if form.is_valid():
-            create_milk_price(**form.cleaned_data)
+            price = create_milk_price(**form.cleaned_data)
+            _audit_action(
+                request.user,
+                "milk_price_created",
+                "MilkPrice",
+                price.pk,
+                {"price": str(price.price_per_liter), "currency": price.currency, "effective_from": str(price.effective_from)},
+            )
             messages.success(request, "Sut narxi saqlandi.")
         else:
             messages.error(request, f"Sut narxini saqlab bo'lmadi: {form.errors.as_text()}")
@@ -216,7 +283,14 @@ def finance_create(request):
     if request.method == "POST":
         form = FinanceEntryForm(request.POST)
         if form.is_valid():
-            create_finance_entry(user=request.user, **form.cleaned_data)
+            entry = create_finance_entry(user=request.user, **form.cleaned_data)
+            _audit_action(
+                request.user,
+                "finance_entry_created",
+                "FinanceEntry",
+                entry.pk,
+                {"type": entry.entry_type, "category": entry.category, "amount": str(entry.amount), "currency": entry.currency},
+            )
             messages.success(request, "Moliyaviy yozuv saqlandi.")
         else:
             messages.error(request, f"Moliyaviy yozuvni saqlab bo'lmadi: {form.errors.as_text()}")
@@ -243,6 +317,7 @@ def finance_page(request):
     context["selected_year"] = year
     context["selected_month"] = month
     context["month_choices"] = MONTH_CHOICES
+    context["finance_query_suffix"] = _finance_query(date_from, date_to, year, month)
     confirmed_finance_qs = finance_qs.filter(status=FinanceStatusChoices.CONFIRMED)
     context["finance_category_rows"] = finance_totals_by_category(confirmed_finance_qs)
     return render(request, "dashboard/finance_page.html", context)
@@ -254,7 +329,14 @@ def finance_edit(request, pk):
     if request.method == "POST":
         form = FinanceEntryForm(request.POST, instance=item)
         if form.is_valid():
-            form.save()
+            entry = form.save()
+            _audit_action(
+                request.user,
+                "finance_entry_updated",
+                "FinanceEntry",
+                entry.pk,
+                {"type": entry.entry_type, "category": entry.category, "amount": str(entry.amount), "currency": entry.currency},
+            )
             return redirect("dashboard:finance_page")
     else:
         form = FinanceEntryForm(instance=item)
@@ -274,6 +356,7 @@ def finance_edit(request, pk):
     context["selected_year"] = year
     context["selected_month"] = month
     context["month_choices"] = MONTH_CHOICES
+    context["finance_query_suffix"] = _finance_query(date_from, date_to, year, month)
     confirmed_finance_qs = finance_qs.filter(status=FinanceStatusChoices.CONFIRMED)
     context["finance_category_rows"] = finance_totals_by_category(confirmed_finance_qs)
     return render(request, "dashboard/finance_page.html", context)
@@ -283,6 +366,13 @@ def finance_edit(request, pk):
 def finance_delete(request, pk):
     item = get_object_or_404(FinanceEntry, pk=pk)
     if request.method == "POST":
+        _audit_action(
+            request.user,
+            "finance_entry_deleted",
+            "FinanceEntry",
+            item.pk,
+            {"type": item.entry_type, "category": item.category, "amount": str(item.amount), "currency": item.currency},
+        )
         item.delete()
     return redirect("dashboard:finance_page")
 
@@ -292,7 +382,14 @@ def worker_create(request):
     if request.method == "POST":
         form = WorkerForm(request.POST)
         if form.is_valid():
-            form.save()
+            worker = form.save()
+            _audit_action(
+                request.user,
+                "worker_created",
+                "Worker",
+                worker.pk,
+                {"name": worker.full_name, "salary": str(worker.monthly_salary), "currency": worker.currency},
+            )
             messages.success(request, "Ishchi saqlandi.")
         else:
             messages.error(request, f"Ishchini saqlab bo'lmadi: {form.errors.as_text()}")
@@ -325,6 +422,7 @@ def workers_page(request):
         "payment_year": year,
         "payment_month": month,
         "month_choices": MONTH_CHOICES,
+        "payment_query_suffix": _payment_query(date_from, date_to, year, month, worker_id),
         "selected_worker_id": worker_id,
         "workers": Worker.objects.filter(is_active=True).order_by("full_name"),
         "nav_active": "workers_manage",
@@ -338,7 +436,14 @@ def worker_edit(request, pk):
     if request.method == "POST":
         form = WorkerForm(request.POST, instance=item)
         if form.is_valid():
-            form.save()
+            worker = form.save()
+            _audit_action(
+                request.user,
+                "worker_updated",
+                "Worker",
+                worker.pk,
+                {"name": worker.full_name, "salary": str(worker.monthly_salary), "currency": worker.currency},
+            )
             return redirect("dashboard:workers_page")
     else:
         form = WorkerForm(instance=item)
@@ -366,6 +471,7 @@ def worker_edit(request, pk):
         "payment_year": year,
         "payment_month": month,
         "month_choices": MONTH_CHOICES,
+        "payment_query_suffix": _payment_query(date_from, date_to, year, month, worker_id),
         "selected_worker_id": worker_id,
         "workers": Worker.objects.filter(is_active=True).order_by("full_name"),
         "nav_active": "workers_manage",
@@ -377,6 +483,13 @@ def worker_edit(request, pk):
 def worker_delete(request, pk):
     item = get_object_or_404(Worker, pk=pk)
     if request.method == "POST":
+        _audit_action(
+            request.user,
+            "worker_deleted",
+            "Worker",
+            item.pk,
+            {"name": item.full_name, "salary": str(item.monthly_salary), "currency": item.currency},
+        )
         item.delete()
     return redirect("dashboard:workers_page")
 
@@ -398,6 +511,13 @@ def worker_advance_create(request):
                 entry_date=payment.advance_date,
                 note=f"{payment.worker.full_name} - {payment.get_payment_type_display()}",
             )
+            _audit_action(
+                request.user,
+                "worker_payment_created",
+                "WorkerAdvance",
+                payment.pk,
+                {"worker": payment.worker.full_name, "amount": str(payment.amount), "currency": payment.currency, "type": payment.payment_type},
+            )
             messages.success(request, "Ishchi to'lovi saqlandi va chiqimga qo'shildi.")
         else:
             messages.error(request, f"Ishchi to'lovini saqlab bo'lmadi: {form.errors.as_text()}")
@@ -410,7 +530,14 @@ def worker_payment_edit(request, pk):
     if request.method == "POST":
         form = WorkerAdvanceForm(request.POST, instance=payment)
         if form.is_valid():
-            form.save()
+            payment = form.save()
+            _audit_action(
+                request.user,
+                "worker_payment_updated",
+                "WorkerAdvance",
+                payment.pk,
+                {"worker": payment.worker.full_name, "amount": str(payment.amount), "currency": payment.currency, "type": payment.payment_type},
+            )
             messages.success(request, "To'lov yangilandi.")
             return redirect("dashboard:workers_page")
         messages.error(request, f"To'lovni yangilab bo'lmadi: {form.errors.as_text()}")
@@ -441,6 +568,7 @@ def worker_payment_edit(request, pk):
         "payment_year": year,
         "payment_month": month,
         "month_choices": MONTH_CHOICES,
+        "payment_query_suffix": _payment_query(date_from, date_to, year, month, worker_id),
         "selected_worker_id": worker_id,
         "workers": Worker.objects.filter(is_active=True).order_by("full_name"),
         "nav_active": "workers_manage",
@@ -452,6 +580,13 @@ def worker_payment_edit(request, pk):
 def worker_payment_delete(request, pk):
     item = get_object_or_404(WorkerAdvance, pk=pk)
     if request.method == "POST":
+        _audit_action(
+            request.user,
+            "worker_payment_deleted",
+            "WorkerAdvance",
+            item.pk,
+            {"worker": item.worker.full_name, "amount": str(item.amount), "currency": item.currency, "type": item.payment_type},
+        )
         item.delete()
     return redirect("dashboard:workers_page")
 
@@ -482,6 +617,7 @@ def workers_report_page(request):
         "payment_year": year,
         "payment_month": month,
         "month_choices": MONTH_CHOICES,
+        "payment_query_suffix": _payment_query(date_from, date_to, year, month, worker_id),
         "selected_worker_id": worker_id,
         "workers": Worker.objects.filter(is_active=True).order_by("full_name"),
     }
@@ -518,7 +654,15 @@ def milk_payment_receive(request, entry_id):
     if request.method == "POST":
         account_source = request.POST.get("account_source", AccountSourceChoices.INTERNAL)
         received_date = _parse_date(request.POST.get("received_at"), _today())
-        mark_milk_payment_received(entry_id=entry_id, account_source=account_source, received_at=received_date)
+        entry = mark_milk_payment_received(entry_id=entry_id, account_source=account_source, received_at=received_date)
+        if entry:
+            _audit_action(
+                request.user,
+                "milk_payment_received",
+                "FinanceEntry",
+                entry.pk,
+                {"amount": str(entry.amount), "currency": entry.currency, "source": entry.source, "received_at": str(entry.received_at)},
+            )
         messages.success(request, "Sut to'lovi hisobga o'tkazildi.")
     return redirect("dashboard:milk_page")
 
@@ -560,6 +704,7 @@ def admin_dashboard(request):
         "finance_form": FinanceEntryForm(initial={"entry_date": today}),
         "worker_form": WorkerForm(),
         "advance_form": WorkerAdvanceForm(initial={"advance_date": today, "month_reference": today.replace(day=1)}),
+        "recent_logs": _recent_logs(),
         "role": request.user.role,
         "is_admin_dashboard": True,
         "nav_active": "home",
