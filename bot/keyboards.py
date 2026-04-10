@@ -4,6 +4,7 @@ from django.conf import settings
 
 def main_menu_keyboard(role):
     buttons = [
+        [KeyboardButton(text="Default pulni olish")],
         [KeyboardButton(text="📝 Kiritish"), KeyboardButton(text="📊 Hisobotlar")],
         [KeyboardButton(text="🌐 Saytga o'tish")],
     ]

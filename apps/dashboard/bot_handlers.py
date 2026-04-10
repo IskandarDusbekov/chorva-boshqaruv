@@ -3,7 +3,7 @@ from decimal import Decimal, InvalidOperation
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, Message, ReplyKeyboardMarkup
+from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, Message, ReplyKeyboardMarkup
 from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.utils import timezone
@@ -21,9 +21,9 @@ from bot.keyboards import (
 )
 from bot.states import QuickEntryStates
 
-from .models import AccountSourceChoices, FinanceCategory, FinanceTypeChoices
+from .models import AccountSourceChoices, FinanceCategory, FinanceEntry, FinanceStatusChoices, FinanceTypeChoices
 from .selectors import get_period_report, get_worker_payroll_summary
-from .services import create_finance_entry, create_milk_income_from_record, create_milk_record
+from .services import create_finance_entry, create_milk_income_from_record, create_milk_record, mark_milk_payment_received
 
 
 router = Router(name="dashboard")
@@ -119,9 +119,88 @@ async def _build_report_message(period):
     )
 
 
+def _pending_milk_payments():
+    return list(
+        FinanceEntry.objects.filter(
+            status=FinanceStatusChoices.PENDING,
+            related_milk_record__isnull=False,
+        )
+        .select_related("related_milk_record")
+        .order_by("-entry_date", "-created_at")[:10]
+    )
+
+
+def _receive_pending_milk_to_internal(entry_id):
+    pending_entry = FinanceEntry.objects.filter(
+        id=entry_id,
+        status=FinanceStatusChoices.PENDING,
+        related_milk_record__isnull=False,
+    ).first()
+    if not pending_entry:
+        return None
+    return mark_milk_payment_received(
+        entry_id=entry_id,
+        account_source=AccountSourceChoices.INTERNAL,
+        received_at=_today(),
+    )
+
 @router.message(F.text == "📊 Hisobotlar")
 async def reports_menu(message: Message):
     await message.answer("📊 Kerakli hisobot turini tanlang.", reply_markup=reports_keyboard())
+
+
+@router.message(F.text == "Default pulni olish")
+async def pending_milk_menu(message: Message):
+    user = await _safe_user(message)
+    if not user or not user.is_telegram_verified:
+        await message.answer("Avval bot orqali tasdiqlanib oling.")
+        return
+
+    payments = await sync_to_async(_pending_milk_payments)()
+    if not payments:
+        await message.answer("Default hisobda olinadigan sut puli yo'q.")
+        return
+
+    rows = []
+    lines = ["Default hisobdagi kutilayotgan sut pullari:"]
+    for item in payments:
+        liters = item.related_milk_record.total_liters if item.related_milk_record else 0
+        lines.append(f"#{item.id} | {item.entry_date} | {liters} L | {item.amount} {item.currency}")
+        rows.append(
+            [
+                InlineKeyboardButton(
+                    text=f"#{item.id} - {item.amount} {item.currency} ichki hisobga",
+                    callback_data=f"milk_receive_internal:{item.id}",
+                )
+            ]
+        )
+
+    await message.answer(
+        "\n".join(lines),
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=rows),
+    )
+
+
+@router.callback_query(F.data.startswith("milk_receive_internal:"))
+async def receive_pending_milk_callback(callback: CallbackQuery):
+    user = await sync_to_async(get_user_by_telegram_id)(callback.from_user.id)
+    if not user or not user.is_telegram_verified:
+        await callback.answer("Avval tasdiqlaning.", show_alert=True)
+        return
+
+    entry_id = int(callback.data.split(":", 1)[1])
+    entry = await sync_to_async(_receive_pending_milk_to_internal)(entry_id)
+    if not entry:
+        await callback.answer("Yozuv topilmadi yoki allaqachon o'tkazilgan.", show_alert=True)
+        return
+
+    await callback.message.edit_text(
+        f"Pul ichki hisobga o'tkazildi.\n"
+        f"Sana: {entry.entry_date}\n"
+        f"Miqdor: {entry.amount} {entry.currency}\n"
+        f"Holat: {entry.get_status_display()}"
+    )
+    await callback.answer("Ichki hisobga qo'shildi.")
 
 
 @router.message(F.text == "📝 Kiritish")
