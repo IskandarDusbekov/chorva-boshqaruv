@@ -48,6 +48,29 @@ def create_worker_advance(*, user, **data):
     return WorkerAdvance.objects.create(created_by=user, **data)
 
 
+def sync_worker_payment_finance_entry(*, user, payment):
+    finance_entry, _created = FinanceEntry.objects.update_or_create(
+        related_worker_payment=payment,
+        defaults={
+            "created_by": user,
+            "entry_type": FinanceTypeChoices.EXPENSE,
+            "category": "Ishchi to'lovi",
+            "amount": payment.amount,
+            "currency": payment.currency,
+            "source": AccountSourceChoices.INTERNAL,
+            "status": FinanceStatusChoices.CONFIRMED,
+            "entry_date": payment.advance_date,
+            "received_at": payment.advance_date,
+            "note": f"{payment.worker.full_name} - {payment.get_payment_type_display()}",
+        },
+    )
+    return finance_entry
+
+
+def delete_worker_payment_finance_entry(*, payment):
+    FinanceEntry.objects.filter(related_worker_payment=payment).delete()
+
+
 def create_milk_income_from_record(*, user, milk_record):
     finance_entry, _created = FinanceEntry.objects.update_or_create(
         related_milk_record=milk_record,

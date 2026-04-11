@@ -61,6 +61,8 @@ class MilkRecordForm(forms.Form):
         instance = kwargs.pop("instance", None)
         super().__init__(*args, **kwargs)
         apply_form_control_styles(self)
+        if not instance and not self.initial.get("record_date"):
+            self.initial["record_date"] = timezone.now().date()
         if instance:
             shift = self.SHIFT_MORNING
             liters = instance.morning_liters

@@ -28,7 +28,9 @@ from .services import (
     create_milk_price,
     create_milk_record,
     create_worker_advance,
+    delete_worker_payment_finance_entry,
     mark_milk_payment_received,
+    sync_worker_payment_finance_entry,
 )
 
 
@@ -500,17 +502,7 @@ def worker_advance_create(request):
         form = WorkerAdvanceForm(request.POST)
         if form.is_valid():
             payment = create_worker_advance(user=request.user, **form.cleaned_data)
-            FinanceEntry.objects.create(
-                created_by=request.user,
-                entry_type="expense",
-                category="Ishchi to'lovi",
-                amount=payment.amount,
-                currency=payment.currency,
-                source="internal",
-                status="confirmed",
-                entry_date=payment.advance_date,
-                note=f"{payment.worker.full_name} - {payment.get_payment_type_display()}",
-            )
+            sync_worker_payment_finance_entry(user=request.user, payment=payment)
             _audit_action(
                 request.user,
                 "worker_payment_created",
@@ -531,6 +523,7 @@ def worker_payment_edit(request, pk):
         form = WorkerAdvanceForm(request.POST, instance=payment)
         if form.is_valid():
             payment = form.save()
+            sync_worker_payment_finance_entry(user=request.user, payment=payment)
             _audit_action(
                 request.user,
                 "worker_payment_updated",
@@ -580,6 +573,7 @@ def worker_payment_edit(request, pk):
 def worker_payment_delete(request, pk):
     item = get_object_or_404(WorkerAdvance, pk=pk)
     if request.method == "POST":
+        delete_worker_payment_finance_entry(payment=item)
         _audit_action(
             request.user,
             "worker_payment_deleted",

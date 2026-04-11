@@ -170,6 +170,14 @@ class FinanceEntry(models.Model):
         related_name="finance_entries",
         verbose_name="Bog'liq sut yozuvi",
     )
+    related_worker_payment = models.ForeignKey(
+        "WorkerAdvance",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="finance_entries",
+        verbose_name="Bog'liq ishchi to'lovi",
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
