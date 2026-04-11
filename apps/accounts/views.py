@@ -18,7 +18,11 @@ from .services import (
 logger = logging.getLogger(__name__)
 
 
-def access_with_token(request, token):
+def access_with_token(request, token=None):
+    token = token or request.GET.get("token", "").strip()
+    if not token:
+        return HttpResponseForbidden("Havola yaroqsiz yoki eskirgan.")
+
     try:
         access_link = validate_access_link(
             token=token,

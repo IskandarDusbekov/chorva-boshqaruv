@@ -149,7 +149,9 @@ class AccessLink(models.Model):
 
     @classmethod
     def build_token(cls):
-        return secrets.token_urlsafe(32)
+        # Shared hosting route'larida URL path bilan muammo chiqmasligi uchun
+        # tokenni faqat harf-raqamli hex formatda yaratamiz.
+        return secrets.token_hex(32)
 
     @classmethod
     def default_expiry(cls):
