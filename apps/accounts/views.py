@@ -1,6 +1,8 @@
 import json
+import logging
 
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
@@ -12,6 +14,8 @@ from .services import (
     validate_access_link,
     verify_telegram_webapp_init_data,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def access_with_token(request, token):
@@ -55,7 +59,13 @@ def telegram_mini_app_verify(request):
         init_data = payload.get("initData", "")
         user = verify_telegram_webapp_init_data(init_data)
         login_with_access_link(request, user)
-    except Exception as exc:
+    except PermissionDenied as exc:
         return JsonResponse({"ok": False, "error": str(exc)}, status=403)
+    except Exception:
+        logger.exception("Mini App verify jarayonida kutilmagan xatolik yuz berdi.")
+        return JsonResponse(
+            {"ok": False, "error": "Mini App tekshiruvida server xatoligi yuz berdi. Qayta urinib ko'ring."},
+            status=500,
+        )
 
     return JsonResponse({"ok": True, "redirect_url": "/panel/admin-dashboard/"})
