@@ -1,25 +1,30 @@
-from aiogram.types import KeyboardButton, ReplyKeyboardMarkup, WebAppInfo
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup, WebAppInfo
 from django.conf import settings
 
 
 def main_menu_keyboard(role):
-    base_url = settings.SITE_BASE_URL.rstrip("/")
     buttons = [
         [KeyboardButton(text="Default pulni olish")],
         [KeyboardButton(text="📝 Kiritish"), KeyboardButton(text="📊 Hisobotlar")],
         [KeyboardButton(text="🌐 Saytga o'tish")],
     ]
-    if role in {"admin", "manager"} and base_url.startswith("https://"):
-        buttons.insert(
-            1,
+    return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
+
+
+def mini_app_inline_keyboard(role):
+    base_url = settings.SITE_BASE_URL.rstrip("/")
+    if role not in {"admin", "manager"} or not base_url.startswith("https://"):
+        return None
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
             [
-                KeyboardButton(
+                InlineKeyboardButton(
                     text="🛡️ Mini Appni ochish",
                     web_app=WebAppInfo(url=f"{base_url}/auth/telegram-mini-app/"),
                 )
-            ],
-        )
-    return ReplyKeyboardMarkup(keyboard=buttons, resize_keyboard=True)
+            ]
+        ]
+    )
 
 
 def entry_menu_keyboard():

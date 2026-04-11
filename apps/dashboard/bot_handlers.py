@@ -15,6 +15,7 @@ from bot.keyboards import (
     finance_currency_keyboard,
     finance_source_keyboard,
     main_menu_keyboard,
+    mini_app_inline_keyboard,
     quick_date_keyboard,
     shift_keyboard,
     skip_note_keyboard,
@@ -54,6 +55,12 @@ async def _return_main_menu(message: Message, state: FSMContext, text="🏠 Bosh
     await state.clear()
     if user:
         await message.answer(text, reply_markup=main_menu_keyboard(user.role))
+        mini_app_keyboard = mini_app_inline_keyboard(user.role)
+        if mini_app_keyboard:
+            await message.answer(
+                "Mini Appni shu inline tugma orqali oching. Telegram ma'lumoti shu yo'l bilan to'g'ri keladi.",
+                reply_markup=mini_app_keyboard,
+            )
     else:
         await message.answer(text)
 
