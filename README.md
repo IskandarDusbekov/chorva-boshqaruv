@@ -87,6 +87,8 @@ python .\bot\main.py
 - `POSTGRES_*`: production baza sozlamalari
 - `REPORT_TELEGRAM_CHAT_ID`: avtomatik hisobot yuboriladigan chat
 - `EMAIL_*`: email yuborish sozlamalari
+- `DJANGO_LOG_LEVEL`: umumiy log darajasi, odatda `INFO`
+- `DJANGO_ERROR_LOG_LEVEL`: xatolik log darajasi, odatda `ERROR`
 
 ## Auth oqimi
 
@@ -123,3 +125,5 @@ python manage.py send_periodic_report --period monthly --channel both
 - Production uchun PostgreSQL tavsiya qilinadi
 - Mini App tugmasi faqat `https://` bo'lsa chiqadi, chunki Telegram oddiy `http://` ni qabul qilmaydi
 - Default sut puli darhol ichki hisobga tushmaydi, avval pending bo'ladi, keyin qabul qilinganda ichki yoki tashqi hisobga o'tadi
+- `logs/app.log` ichida umumiy Django va ilova loglari yoziladi
+- `logs/error.log` ichida xatoliklar alohida yoziladi

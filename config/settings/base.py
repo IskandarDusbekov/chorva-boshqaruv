@@ -1,11 +1,14 @@
 from pathlib import Path
 import os
+import logging.config
 
 from dotenv import load_dotenv
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 load_dotenv(BASE_DIR / ".env")
+LOGS_DIR = BASE_DIR / "logs"
+LOGS_DIR.mkdir(exist_ok=True)
 
 SECRET_KEY = "change-me"
 DEBUG = False
@@ -109,6 +112,8 @@ EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").lower() in {"1", "true", "yes"}
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+DJANGO_LOG_LEVEL = os.getenv("DJANGO_LOG_LEVEL", "INFO")
+DJANGO_ERROR_LOG_LEVEL = os.getenv("DJANGO_ERROR_LOG_LEVEL", "ERROR")
 
 JAZZMIN_SETTINGS = {
     "site_title": "BotGate Admin",
@@ -137,4 +142,63 @@ JAZZMIN_SETTINGS = {
     "navigation_expanded": True,
     "show_sidebar": True,
     "changeform_format": "horizontal_tabs",
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "%(levelname)s %(asctime)s %(name)s %(message)s",
+        },
+        "simple": {
+            "format": "%(levelname)s %(message)s",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+        "app_file": {
+            "class": "logging.FileHandler",
+            "filename": LOGS_DIR / "app.log",
+            "formatter": "verbose",
+            "level": DJANGO_LOG_LEVEL,
+            "encoding": "utf-8",
+        },
+        "error_file": {
+            "class": "logging.FileHandler",
+            "filename": LOGS_DIR / "error.log",
+            "formatter": "verbose",
+            "level": DJANGO_ERROR_LOG_LEVEL,
+            "encoding": "utf-8",
+        },
+    },
+    "root": {
+        "handlers": ["console", "app_file", "error_file"],
+        "level": DJANGO_LOG_LEVEL,
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "app_file", "error_file"],
+            "level": DJANGO_LOG_LEVEL,
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["console", "app_file", "error_file"],
+            "level": DJANGO_ERROR_LOG_LEVEL,
+            "propagate": False,
+        },
+        "apps": {
+            "handlers": ["console", "app_file", "error_file"],
+            "level": DJANGO_LOG_LEVEL,
+            "propagate": False,
+        },
+        "bot": {
+            "handlers": ["console", "app_file", "error_file"],
+            "level": DJANGO_LOG_LEVEL,
+            "propagate": False,
+        },
+    },
 }
