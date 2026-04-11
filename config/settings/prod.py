@@ -21,7 +21,7 @@ def _env_list(name, default=""):
 
 
 SECRET_KEY = _required_env("SECRET_KEY")
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = _env_list("ALLOWED_HOSTS")
 CSRF_TRUSTED_ORIGINS = _env_list("CSRF_TRUSTED_ORIGINS")
 
