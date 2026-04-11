@@ -12,7 +12,7 @@ LOGS_DIR.mkdir(exist_ok=True)
 
 SECRET_KEY = "change-me"
 DEBUG = False
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
 INSTALLED_APPS = [
     "jazzmin",
@@ -84,7 +84,7 @@ TIME_ZONE = "Asia/Tashkent"
 USE_I18N = True
 USE_TZ = False
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 MEDIA_URL = "/media/"
