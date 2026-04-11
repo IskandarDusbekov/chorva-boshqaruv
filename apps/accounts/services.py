@@ -2,6 +2,7 @@ from datetime import timedelta
 import hashlib
 import hmac
 import json
+import time
 from urllib.parse import parse_qsl
 
 from django.conf import settings
@@ -206,9 +207,8 @@ def verify_telegram_webapp_init_data(init_data):
     auth_date_raw = pairs.get("auth_date")
     if not auth_date_raw:
         raise PermissionDenied("auth_date topilmadi.")
-    auth_date = timezone.datetime.fromtimestamp(int(auth_date_raw), tz=timezone.utc)
     max_age_seconds = 300
-    if (timezone.now() - auth_date).total_seconds() > max_age_seconds:
+    if time.time() - int(auth_date_raw) > max_age_seconds:
         raise PermissionDenied("Mini App sessiyasi eskirgan.")
 
     user_payload = pairs.get("user")
