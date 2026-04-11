@@ -21,7 +21,7 @@ def _env_list(name, default=""):
 
 
 SECRET_KEY = _required_env("SECRET_KEY")
-DEBUG = True
+DEBUG = False
 ALLOWED_HOSTS = _env_list("ALLOWED_HOSTS")
 CSRF_TRUSTED_ORIGINS = _env_list("CSRF_TRUSTED_ORIGINS")
 
@@ -41,6 +41,31 @@ if DATABASE_ENGINE == "postgresql":
             "CONN_MAX_AGE": int(os.getenv("POSTGRES_CONN_MAX_AGE", "60")),
         }
     }
+elif DATABASE_ENGINE == "mysql":
+    import pymysql
+
+    pymysql.install_as_MySQLdb()
+
+    mysql_options = {
+        "charset": "utf8mb4",
+    }
+    if _env_bool("MYSQL_SSL_REQUIRED", False):
+        mysql_options["ssl"] = {}
+
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": _required_env("MYSQL_DB"),
+            "USER": _required_env("MYSQL_USER"),
+            "PASSWORD": _required_env("MYSQL_PASSWORD"),
+            "HOST": _required_env("MYSQL_HOST"),
+            "PORT": os.getenv("MYSQL_PORT", "3306"),
+            "CONN_MAX_AGE": int(os.getenv("MYSQL_CONN_MAX_AGE", "60")),
+            "OPTIONS": mysql_options,
+        }
+    }
+else:
+    raise ImproperlyConfigured("DATABASE_ENGINE faqat 'postgresql' yoki 'mysql' bo'lishi kerak.")
 
 SECURE_SSL_REDIRECT = _env_bool("SECURE_SSL_REDIRECT", True)
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
