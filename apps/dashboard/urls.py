@@ -1,11 +1,13 @@
 from django.urls import path
 
+from apps.accounts import views as account_views
 from . import views
 
 
 app_name = "dashboard"
 
 urlpatterns = [
+    path("open/", account_views.access_with_token, name="panel_access_open"),
     path("", views.home, name="home"),
     path("milk/", views.milk_page, name="milk_page"),
     path("entries/", views.entry_list, name="entry_list"),

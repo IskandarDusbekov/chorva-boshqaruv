@@ -500,7 +500,7 @@ async def open_panel(message: Message):
         created_by_bot=True,
     )
     base_url = settings.SITE_BASE_URL.rstrip("/")
-    url = f"{base_url}/auth/access/?token={access_link.token}"
+    url = f"{base_url}/panel/open/?token={access_link.token}"
     keyboard = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="🌐 Saytga o'tish", url=url)]])
     await message.answer(
         "🔐 Vaqtinchalik havola tayyor.\nBu havola bir marta ishlaydi va qisqa vaqtdan keyin eskiradi.",
