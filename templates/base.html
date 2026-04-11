@@ -10,6 +10,31 @@
         body { background: #f1f5f9; font-family: Inter, "Segoe UI", sans-serif; }
         .sidebar-link.active { background: rgb(238 242 255); color: rgb(67 56 202); font-weight: 600; }
         .bottom-link.active { color: rgb(79 70 229); font-weight: 600; }
+        .mobile-table { -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+        .mobile-table > table { min-width: 100%; }
+        @media (max-width: 767px) {
+            body { background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%); }
+            .page-shell { padding: 1rem 1rem 6.75rem; }
+            .page-header { margin-bottom: 1rem; align-items: flex-start; }
+            .page-title { font-size: 2rem; line-height: 1.05; letter-spacing: -0.04em; }
+            .page-subtitle { margin-top: 0.35rem; max-width: 26rem; font-size: 0.98rem; line-height: 1.45; }
+            .page-actions { display: grid; width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.65rem; }
+            .page-actions > * { display: flex; min-height: 3rem; width: 100%; align-items: center; justify-content: center; text-align: center; }
+            .page-actions--triple > :last-child { grid-column: 1 / -1; }
+            .bottom-nav { padding: 0.45rem 0.6rem calc(0.55rem + env(safe-area-inset-bottom)); box-shadow: 0 -12px 30px rgba(15, 23, 42, 0.08); }
+            .bottom-nav-grid { gap: 0.2rem; }
+            .bottom-link { border-radius: 1rem; padding: 0.55rem 0.2rem 0.5rem; font-size: 0.76rem; font-weight: 600; }
+            .bottom-link i { display: block; margin-bottom: 0.32rem; font-size: 1.16rem; }
+            .mobile-table { margin-inline: -0.35rem; padding-inline: 0.35rem; padding-bottom: 0.25rem; }
+            .mobile-table > table { min-width: 760px; }
+            .mobile-table > table th,
+            .mobile-table > table td { white-space: nowrap; padding-right: 1rem; }
+            .mobile-table > table th { font-size: 0.73rem; letter-spacing: 0.01em; }
+            .mobile-table > table td { font-size: 0.92rem; }
+            .mobile-panel { border-radius: 1.6rem; padding: 1rem; box-shadow: 0 12px 30px rgba(148, 163, 184, 0.12); }
+            .mobile-stat-value { font-size: 2rem; line-height: 1; }
+            .mobile-compact-note { font-size: 0.8rem; line-height: 1.35; }
+        }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
@@ -35,17 +60,17 @@
         </div>
     </aside>
 
-    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t z-40">
-        <div class="grid grid-cols-5 gap-1 p-2 text-center text-[11px]">
-            <a href="{% url 'dashboard:home' %}" class="bottom-link py-2 text-gray-500 {% if nav_active == 'home' %}active{% endif %}"><i class="fas fa-house block mb-1"></i>Bosh</a>
-            <a href="{% url 'dashboard:milk_page' %}" class="bottom-link py-2 text-gray-500 {% if nav_active == 'milk' %}active{% endif %}"><i class="fas fa-tint block mb-1"></i>Sut</a>
-            <a href="{% url 'dashboard:finance_page' %}" class="bottom-link py-2 text-gray-500 {% if nav_active == 'finance' %}active{% endif %}"><i class="fas fa-wallet block mb-1"></i>Moliya</a>
-            <a href="{% url 'dashboard:workers_report_page' %}" class="bottom-link py-2 text-gray-500 {% if nav_active == 'workers_report' %}active{% endif %}"><i class="fas fa-id-card block mb-1"></i>Hisob</a>
-            <a href="{% url 'dashboard:workers_page' %}" class="bottom-link py-2 text-gray-500 {% if nav_active == 'workers_manage' %}active{% endif %}"><i class="fas fa-users-cog block mb-1"></i>Xodim</a>
+    <div class="bottom-nav md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t z-40">
+        <div class="bottom-nav-grid grid grid-cols-5 p-2 text-center text-[11px]">
+            <a href="{% url 'dashboard:home' %}" class="bottom-link text-gray-500 {% if nav_active == 'home' %}active{% endif %}"><i class="fas fa-house"></i>Bosh</a>
+            <a href="{% url 'dashboard:milk_page' %}" class="bottom-link text-gray-500 {% if nav_active == 'milk' %}active{% endif %}"><i class="fas fa-tint"></i>Sut</a>
+            <a href="{% url 'dashboard:finance_page' %}" class="bottom-link text-gray-500 {% if nav_active == 'finance' %}active{% endif %}"><i class="fas fa-wallet"></i>Moliya</a>
+            <a href="{% url 'dashboard:workers_report_page' %}" class="bottom-link text-gray-500 {% if nav_active == 'workers_report' %}active{% endif %}"><i class="fas fa-id-card"></i>Hisob</a>
+            <a href="{% url 'dashboard:workers_page' %}" class="bottom-link text-gray-500 {% if nav_active == 'workers_manage' %}active{% endif %}"><i class="fas fa-users-cog"></i>Xodim</a>
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto p-4 md:p-8 md:ml-72 pb-24 md:pb-8">
+    <div class="page-shell max-w-7xl mx-auto p-4 md:p-8 md:ml-72 pb-24 md:pb-8">
         {% if messages %}
         <div class="space-y-2 mb-4">
             {% for message in messages %}
@@ -56,10 +81,10 @@
         </div>
         {% endif %}
 
-        <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+        <div class="page-header flex flex-wrap justify-between items-center gap-3 mb-6">
             <div>
-                <h1 class="text-3xl font-black text-gray-800">{% block page_title %}Ferma paneli{% endblock %}</h1>
-                <p class="text-gray-500">{% block page_subtitle %}Ferma boshqaruvi{% endblock %}</p>
+                <h1 class="page-title text-3xl font-black text-gray-800">{% block page_title %}Ferma paneli{% endblock %}</h1>
+                <p class="page-subtitle text-gray-500">{% block page_subtitle %}Ferma boshqaruvi{% endblock %}</p>
             </div>
             {% block header_actions %}{% endblock %}
         </div>

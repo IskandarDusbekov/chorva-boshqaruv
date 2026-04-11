@@ -5,7 +5,7 @@
 {% block page_title %}Moliya bo'limi{% endblock %}
 {% block page_subtitle %}Kirim, chiqim, moliyaviy hisobot va tarixni boshqarish{% endblock %}
 {% block header_actions %}
-<div class="flex flex-wrap gap-2">
+<div class="page-actions flex flex-wrap gap-2">
   <a href="{% url 'dashboard:general_report_export' %}?date_from={{ date_from|date:'Y-m-d' }}&date_to={{ date_to|date:'Y-m-d' }}&year={{ selected_year|default:'' }}&month={{ selected_month|default:'' }}" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-semibold"><i class="fas fa-file-excel mr-2"></i>Umumiy hisobot</a>
   <button type="button" onclick="toggleFinanceForm()" class="px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-semibold"><i class="fas fa-plus mr-2"></i>Yangi yozuv</button>
 </div>
@@ -63,7 +63,7 @@
     <h2 class="font-bold text-gray-800">Kategoriya bo'yicha rangli jamlanma</h2>
     <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-600">{{ date_from }} - {{ date_to }}</span>
   </div>
-  <div class="overflow-x-auto">
+  <div class="mobile-table overflow-x-auto">
     <table class="w-full text-sm">
       <thead>
         <tr class="text-left text-gray-500 border-b">
@@ -97,7 +97,7 @@
 
 <div class="bg-white rounded-2xl shadow p-5">
   <h2 class="font-bold text-gray-800 mb-4">Oxirgi kirim va chiqimlar</h2>
-  <div class="overflow-x-auto">
+  <div class="mobile-table overflow-x-auto">
     <table class="w-full text-sm">
       <thead>
         <tr class="text-left text-gray-500 border-b">

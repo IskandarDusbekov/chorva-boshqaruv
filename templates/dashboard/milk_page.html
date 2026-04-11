@@ -5,7 +5,7 @@
 {% block page_title %}Sut boshqaruvi{% endblock %}
 {% block page_subtitle %}Sut narxi, sut yozuvi va kutilayotgan to'lovlar{% endblock %}
 {% block header_actions %}
-<div class="flex flex-wrap gap-2">
+<div class="page-actions flex flex-wrap gap-2">
   <button type="button" onclick="toggleMilkModal()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">Sut qo'shish</button>
   <button type="button" onclick="togglePriceModal()" class="px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-semibold">Sut narxi</button>
 </div>
@@ -46,7 +46,7 @@
 <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
   <div class="xl:col-span-2 bg-white rounded-2xl shadow p-5">
     <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fas fa-table text-indigo-500"></i> Sut yozuvlari</h2>
-    <div class="overflow-x-auto">
+    <div class="mobile-table overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
           <tr class="text-left text-gray-500 border-b">
@@ -101,14 +101,14 @@
         <div class="font-semibold">{{ item.entry_date }} | {{ item.amount|floatformat:2|intcomma }} {{ item.currency }}</div>
         <div class="text-sm text-gray-500">{{ item.related_milk_record.total_liters|floatformat:1|intcomma }} litr | {{ item.get_status_display }}</div>
       </div>
-      <form method="post" action="{% url 'dashboard:milk_payment_receive' item.id %}" class="flex flex-wrap gap-2">
+      <form method="post" action="{% url 'dashboard:milk_payment_receive' item.id %}" class="flex w-full flex-wrap gap-2 md:w-auto">
         {% csrf_token %}
-        <input type="date" name="received_at" value="{{ date_to|date:'Y-m-d' }}" class="border rounded-xl px-3 py-2 text-sm">
-        <select name="account_source" class="border rounded-xl px-3 py-2 text-sm">
+        <input type="date" name="received_at" value="{{ date_to|date:'Y-m-d' }}" class="border rounded-xl px-3 py-2 text-sm flex-1 min-w-[10rem]">
+        <select name="account_source" class="border rounded-xl px-3 py-2 text-sm flex-1 min-w-[10rem]">
           <option value="internal">Ichki hisob</option>
           <option value="external">Tashqi hisob</option>
         </select>
-        <button class="px-4 py-2 rounded-xl bg-sky-600 text-white text-sm">Hisobga qo'shish</button>
+        <button class="px-4 py-2 rounded-xl bg-sky-600 text-white text-sm w-full md:w-auto">Hisobga qo'shish</button>
       </form>
     </div>
     {% empty %}

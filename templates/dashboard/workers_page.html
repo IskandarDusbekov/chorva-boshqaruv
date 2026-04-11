@@ -5,7 +5,7 @@
 {% block page_title %}Xodimlarni boshqarish{% endblock %}
 {% block page_subtitle %}Ishchi qo'shish, tahrirlash, avans berish va to'lovlar jadvali{% endblock %}
 {% block header_actions %}
-<div class="flex flex-wrap gap-2">
+<div class="page-actions flex flex-wrap gap-2">
   <button type="button" onclick="toggleWorkerForm()" class="px-4 py-2 rounded-xl bg-sky-600 text-white text-sm font-semibold"><i class="fas fa-user-plus mr-2"></i>Ishchi qo'shish</button>
   <button type="button" onclick="toggleAdvanceModal()" class="px-4 py-2 rounded-xl bg-amber-500 text-white text-sm font-semibold"><i class="fas fa-hand-holding-dollar mr-2"></i>Avans berish</button>
 </div>
@@ -18,7 +18,7 @@
       <h2 class="font-bold text-gray-800">Ishchilar ro'yxati</h2>
       <a href="{% url 'dashboard:workers_report_page' %}" class="px-4 py-2 rounded-xl bg-indigo-50 text-indigo-700 text-sm font-semibold">Ishchilar hisobini ochish</a>
     </div>
-    <div class="overflow-x-auto">
+    <div class="mobile-table overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
           <tr class="text-left text-gray-500 border-b">
@@ -122,7 +122,7 @@
       <button class="w-full rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white">Filtrlash</button>
     </div>
   </form>
-  <div class="overflow-x-auto">
+  <div class="mobile-table overflow-x-auto">
     <table class="w-full text-sm">
       <thead>
         <tr class="text-left text-gray-500 border-b">

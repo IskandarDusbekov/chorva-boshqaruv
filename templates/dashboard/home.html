@@ -5,7 +5,7 @@
 {% block page_title %}Asosiy Dashboard{% endblock %}
 {% block page_subtitle %}Ferma holati, balans va eng muhim ko'rsatkichlar{% endblock %}
 {% block header_actions %}
-<div class="flex flex-wrap gap-2">
+<div class="page-actions page-actions--triple flex flex-wrap gap-2">
   <button type="button" onclick="toggleMilkModal()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold">Sut qo'shish</button>
   <button type="button" onclick="togglePriceModal()" class="px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-semibold">Sut narxi</button>
   <button type="button" onclick="toggleAdvanceModal()" class="px-4 py-2 rounded-xl bg-amber-500 text-white text-sm font-semibold">Avans berish</button>
@@ -14,25 +14,25 @@
 
 {% block content %}
 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white rounded-2xl shadow p-5">
+  <div class="mobile-panel bg-white rounded-2xl shadow p-5">
     <div class="text-sm text-gray-500">Bugungi sut</div>
-    <div class="text-3xl font-black text-indigo-700 mt-2">{{ stats.today_liters|floatformat:0|intcomma }} L</div>
+    <div class="mobile-stat-value text-3xl font-black text-indigo-700 mt-2">{{ stats.today_liters|floatformat:0|intcomma }} L</div>
     <div class="text-xs {% if stats.growth_percent >= 0 %}text-emerald-600{% else %}text-rose-600{% endif %} mt-2">
       {{ stats.growth_percent|floatformat:1 }}% kechagiga nisbatan
     </div>
   </div>
-  <div class="bg-white rounded-2xl shadow p-5">
+  <div class="mobile-panel bg-white rounded-2xl shadow p-5">
     <div class="text-sm text-gray-500">Oxirgi davr sut hajmi</div>
-    <div class="text-3xl font-black text-gray-800 mt-2">{{ stats.total_liters|floatformat:0|intcomma }} L</div>
-    <div class="text-xs text-gray-400 mt-2">Eng ko'p: {{ stats.max_daily|floatformat:0|intcomma }} L | Eng kam: {{ stats.min_daily|floatformat:0|intcomma }} L</div>
+    <div class="mobile-stat-value text-3xl font-black text-gray-800 mt-2">{{ stats.total_liters|floatformat:0|intcomma }} L</div>
+    <div class="mobile-compact-note text-xs text-gray-400 mt-2">Eng ko'p: {{ stats.max_daily|floatformat:0|intcomma }} L | Eng kam: {{ stats.min_daily|floatformat:0|intcomma }} L</div>
   </div>
-  <div class="bg-white rounded-2xl shadow p-5">
+  <div class="mobile-panel bg-white rounded-2xl shadow p-5">
     <div class="text-sm text-gray-500">Ferma asosiy hisobi</div>
     <div class="text-2xl font-black text-emerald-700 mt-2">{{ stats.farm_balance.UZS|floatformat:0|intcomma }} UZS</div>
     <div class="text-sm font-bold text-emerald-500">{{ stats.farm_balance.USD|floatformat:2|intcomma }} USD</div>
     <div class="text-xs text-gray-400 mt-2">Faqat ichki hisobdagi pul</div>
   </div>
-  <div class="bg-white rounded-2xl shadow p-5">
+  <div class="mobile-panel bg-white rounded-2xl shadow p-5">
     <div class="text-sm text-gray-500">Kutilayotgan sut puli</div>
     <div class="text-2xl font-black text-sky-700 mt-2">{{ stats.pending_milk_totals.UZS|floatformat:0|intcomma }} UZS</div>
     <div class="text-sm font-bold text-sky-500">{{ stats.pending_milk_totals.USD|floatformat:2|intcomma }} USD</div>
@@ -56,7 +56,8 @@
         <div class="h-full rounded-full bg-gradient-to-r from-indigo-500 to-sky-500" style="width: {{ stats.progress_percent }}%;"></div>
       </div>
     </div>
-    <div class="grid grid-cols-7 gap-3 items-end h-56">
+    <div class="overflow-x-auto">
+    <div class="grid min-w-[420px] grid-cols-7 gap-3 items-end h-56">
       {% for item in stats.weekly_chart %}
       <div class="flex flex-col items-center justify-end h-full">
         <div class="text-[11px] font-semibold text-gray-500 mb-2">{{ item.liters|floatformat:0 }}</div>
@@ -66,6 +67,7 @@
       {% empty %}
       <div class="col-span-7 text-sm text-gray-400">Grafik uchun ma'lumot yo'q</div>
       {% endfor %}
+    </div>
     </div>
   </div>
 
@@ -101,7 +103,7 @@
       <h2 class="font-bold text-gray-800">Oxirgi sut yozuvlari</h2>
       <a href="{% url 'dashboard:milk_page' %}" class="px-4 py-2 rounded-xl bg-indigo-50 text-indigo-700 text-sm font-semibold">Sut boshqaruviga o'tish</a>
     </div>
-    <div class="overflow-x-auto">
+    <div class="mobile-table overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
           <tr class="text-left text-gray-500 border-b">
