@@ -44,6 +44,11 @@ if DATABASE_ENGINE == "postgresql":
 elif DATABASE_ENGINE == "mysql":
     import pymysql
 
+    # Django 6 MySQL backend mysqlclient 2.2.1+ ni tekshiradi.
+    # Shared hostingda esa ko'pincha PyMySQL ishlatamiz, u moslik uchun
+    # 1.4.6 deb ko'rinadi. Shu sabab versionni Django kutgan formatga moslaymiz.
+    pymysql.version_info = (2, 2, 1, "final", 0)
+    pymysql.__version__ = "2.2.1"
     pymysql.install_as_MySQLdb()
 
     mysql_options = {
