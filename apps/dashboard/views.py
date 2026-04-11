@@ -1,3 +1,5 @@
+"""Dashboard sahifalari, modallar va boshqaruv actionlari."""
+
 from calendar import monthrange
 from datetime import datetime, timedelta
 
@@ -31,6 +33,7 @@ from .services import (
     delete_worker_payment_finance_entry,
     mark_milk_payment_received,
     sync_worker_payment_finance_entry,
+    _worker_payment_snapshot,
 )
 
 
@@ -51,10 +54,12 @@ MONTH_CHOICES = [
 
 
 def _today():
+    """Joriy sanani qaytaradi."""
     return timezone.now().date()
 
 
 def _parse_date(value, fallback):
+    """GET yoki POST dan kelgan sanani xavfsiz parse qiladi."""
     if not value:
         return fallback
     try:
@@ -64,6 +69,7 @@ def _parse_date(value, fallback):
 
 
 def _redirect_back(request, fallback_name):
+    """Forma yuborilgandan keyin foydalanuvchini avvalgi sahifaga qaytaradi."""
     next_url = request.POST.get("next") or request.GET.get("next")
     if next_url:
         return redirect(next_url)
@@ -71,6 +77,7 @@ def _redirect_back(request, fallback_name):
 
 
 def _parse_year(value):
+    """Yil qiymatini butun songa aylantiradi."""
     try:
         return int(value) if value else None
     except (TypeError, ValueError):
@@ -78,6 +85,7 @@ def _parse_year(value):
 
 
 def _parse_int(value):
+    """Butun son kerak bo'lgan filtrlarda xatoni yutib yuboradi."""
     try:
         return int(value) if value else None
     except (TypeError, ValueError):
@@ -85,6 +93,7 @@ def _parse_int(value):
 
 
 def _apply_year_month_period(date_from, date_to, year=None, month=None):
+    """Yil va oy filteridan aniq sana oralig'ini yasaydi."""
     if year and month and 1 <= month <= 12:
         last_day = monthrange(year, month)[1]
         return datetime(year, month, 1).date(), datetime(year, month, last_day).date()
@@ -94,10 +103,12 @@ def _apply_year_month_period(date_from, date_to, year=None, month=None):
 
 
 def _date_range_query(date_from, date_to):
+    """Pagination va linklar uchun sana query satrini qaytaradi."""
     return f"&date_from={date_from:%Y-%m-%d}&date_to={date_to:%Y-%m-%d}"
 
 
 def _finance_query(date_from, date_to, year=None, month=None):
+    """Moliya sahifasidagi filterlarni pagination bilan saqlab qoladi."""
     return (
         f"&date_from={date_from:%Y-%m-%d}&date_to={date_to:%Y-%m-%d}"
         f"&year={year or ''}&month={month or ''}"
@@ -105,6 +116,7 @@ def _finance_query(date_from, date_to, year=None, month=None):
 
 
 def _payment_query(date_from, date_to, year=None, month=None, worker_id=None):
+    """Ishchi to'lovlari filtrlari uchun query satrini tayyorlaydi."""
     return (
         f"&worker_id={worker_id or ''}"
         f"&payment_date_from={date_from:%Y-%m-%d}&payment_date_to={date_to:%Y-%m-%d}"
@@ -113,6 +125,7 @@ def _payment_query(date_from, date_to, year=None, month=None, worker_id=None):
 
 
 def _audit_action(user, action, object_type, object_id="", meta=None):
+    """Web paneldagi muhim o'zgarishlarni audit logga yozadi."""
     create_audit_log(
         user=user,
         action=action,
@@ -122,16 +135,19 @@ def _audit_action(user, action, object_type, object_id="", meta=None):
     )
 
 
-def _recent_logs(limit=12):
-    return AuditLog.objects.select_related("user").order_by("-created_at")[:limit]
+def _recent_logs():
+    """Dashboard uchun audit log querysetini qaytaradi."""
+    return AuditLog.objects.select_related("user").order_by("-created_at")
 
 
 @login_required
 def home(request):
+    """Asosiy dashboard: kartalar, grafiklar va loglarni chiqaradi."""
     today = _today()
     date_from = _parse_date(request.GET.get("date_from"), today - timedelta(days=6))
     date_to = _parse_date(request.GET.get("date_to"), today)
     overview = get_dashboard_overview(date_from, date_to)
+    logs_page_obj = Paginator(_recent_logs(), 10).get_page(request.GET.get("logs_page"))
 
     context = {
         "stats": overview,
@@ -144,7 +160,7 @@ def home(request):
         "finance_form": FinanceEntryForm(initial={"entry_date": today}),
         "worker_form": WorkerForm(),
         "advance_form": WorkerAdvanceForm(initial={"advance_date": today, "month_reference": today.replace(day=1)}),
-        "recent_logs": _recent_logs(),
+        "logs_page_obj": logs_page_obj,
         "role": request.user.role,
         "nav_active": "home",
     }
@@ -153,6 +169,7 @@ def home(request):
 
 @login_required
 def milk_page(request):
+    """Sut boshqaruvi sahifasi va unga tegishli modal ma'lumotlar."""
     today = _today()
     date_from = _parse_date(request.GET.get("date_from"), today - timedelta(days=30))
     date_to = _parse_date(request.GET.get("date_to"), today)
@@ -520,10 +537,20 @@ def worker_advance_create(request):
 def worker_payment_edit(request, pk):
     payment = get_object_or_404(WorkerAdvance, pk=pk)
     if request.method == "POST":
+        previous_snapshot = _worker_payment_snapshot(
+            worker_name=payment.worker.full_name,
+            payment_type_label=payment.get_payment_type_display(),
+            currency=payment.currency,
+            advance_date=payment.advance_date,
+        )
         form = WorkerAdvanceForm(request.POST, instance=payment)
         if form.is_valid():
             payment = form.save()
-            sync_worker_payment_finance_entry(user=request.user, payment=payment)
+            sync_worker_payment_finance_entry(
+                user=request.user,
+                payment=payment,
+                previous_snapshot=previous_snapshot,
+            )
             _audit_action(
                 request.user,
                 "worker_payment_updated",
@@ -688,6 +715,7 @@ def admin_dashboard(request):
     date_from = _parse_date(request.GET.get("date_from"), today - timedelta(days=30))
     date_to = _parse_date(request.GET.get("date_to"), today)
     stats = get_dashboard_overview(date_from, date_to)
+    logs_page_obj = Paginator(_recent_logs(), 10).get_page(request.GET.get("logs_page"))
     context = {
         "stats": stats,
         "worker_payroll": get_worker_payroll_summary(),
@@ -698,7 +726,7 @@ def admin_dashboard(request):
         "finance_form": FinanceEntryForm(initial={"entry_date": today}),
         "worker_form": WorkerForm(),
         "advance_form": WorkerAdvanceForm(initial={"advance_date": today, "month_reference": today.replace(day=1)}),
-        "recent_logs": _recent_logs(),
+        "logs_page_obj": logs_page_obj,
         "role": request.user.role,
         "is_admin_dashboard": True,
         "nav_active": "home",

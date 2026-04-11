@@ -1,39 +1,125 @@
 # BotGate Panel
 
-Telegram-first secure management system where all users, including admins, access the platform only through a Telegram bot. The web panel is protected by temporary signed links, with role-based access for users, managers, and admins.
+Telegram-first chorvachilik boshqaruv tizimi. Foydalanuvchi ham, admin ham avval Telegram bot orqali tekshiriladi, web panel esa faqat vaqtinchalik signed link yoki xavfsiz Mini App oqimi orqali ochiladi.
 
-## Architecture
+## Asosiy imkoniyatlar
 
-- `apps.accounts`: authentication, whitelist, Telegram bind, temporary access links, sessions, audit logs
-- `apps.dashboard`: user entries, reports, admin and manager views, role-based panel pages
-- `bot/`: aiogram bot bootstrap, keyboards, middleware, FSM states
-- `config/settings/`: `base.py`, `dev.py`, `prod.py`
+- Telegram bot orqali kirish, kontakt tekshirish va bir martalik login ulash
+- Whitelist asosidagi foydalanuvchi boshqaruvi
+- Admin, manager va oddiy user rollari
+- Sut boshqaruvi: ertalabki/kechki yozuv, sut narxi, kutilayotgan sut puli
+- Moliya: kirim, chiqim, ichki hisob, tashqi hisob, kategoriya bo'yicha jamlanma
+- Xodimlar: ishchi qo'shish, avans, ish haqi, oylik qoldiq va oylar bo'yicha hisobot
+- Dashboard: progress, o'sish tahlili, oxirgi loglar va tez ko'rinadigan muhim kartalar
+- Excel hisobotlar va davriy avtomatik yuborish
 
-## MVP scope
+## Papka tuzilmasi
 
-- Admin whitelist management
-- First login with username/password and Telegram binding
-- Signed one-time access links for web panel
-- Daily entry creation
-- Basic reports and admin dashboard
+- `apps/accounts/`: auth, whitelist, telegram bind, access link, audit log
+- `apps/dashboard/`: sut, moliya, ishchilar, hisobotlar, dashboard sahifalari
+- `bot/`: aiogram dispatcher, tugmalar, state'lar va bot oqimlari
+- `config/settings/`: umumiy, lokal va production sozlamalari
+- `templates/`: web panel sahifalari
+- `static/`: css, js, rasmlar
 
-## Admin UI
+## Sozlamalar bo'linishi
 
-- Uzbekcha admin bo'limlari va sarlavhalar
-- `Jazzmin` bilan soddaroq va tozaroq boshqaruv paneli
+- `config.settings.base`: hamma muhitlar uchun umumiy skelet
+- `config.settings.dev`: lokal ishlash uchun qulay, `DEBUG=True`
+- `config.settings.prod`: server uchun xavfsizroq, `DEBUG=False`, HTTPS va secure cookie
 
-## Production
+## Lokal ishga tushirish
 
-Production sozlamalari `.env` orqali boshqariladi. Serverda tracked fayllarni `nano` bilan o'zgartirmang, aks holda keyingi `git pull` conflict beradi.
+1. Virtual environment yarating:
 
-- Namuna: `.env.example`
-- To'liq qo'llanma: `docs/PRODUCTION.md`
-- Production settings: `config.settings.prod`
+```bash
+python -m venv venv
+```
 
-## Suggested alternate names
+2. Aktiv qiling:
 
-- BotGate Panel
-- TGMate Panel
-- LinkGate Admin
-- Secure Herd Panel
-- TeleGate Dashboard
+```bash
+venv\Scripts\activate
+```
+
+3. Kutubxonalarni o'rnating:
+
+```bash
+pip install -r requirements.txt
+```
+
+4. `.env` yarating:
+
+```bash
+copy .env.example .env
+```
+
+5. Migratsiyalarni qo'llang:
+
+```bash
+python manage.py migrate
+```
+
+6. Admin yarating:
+
+```bash
+python manage.py createsuperuser
+```
+
+7. Serverni ishga tushiring:
+
+```bash
+python manage.py runserver
+```
+
+8. Botni alohida ishga tushiring:
+
+```bash
+python .\bot\main.py
+```
+
+## Muhim `.env` maydonlari
+
+- `BOT_TOKEN`: Telegram bot tokeni
+- `SITE_BASE_URL`: lokalda `http://127.0.0.1:8000`, productionda `https://domeningiz`
+- `ADMIN_URL`: standart `/admin/` o'rniga yashirin admin yo'li
+- `SECRET_KEY`: production uchun maxfiy kalit
+- `POSTGRES_*`: production baza sozlamalari
+- `REPORT_TELEGRAM_CHAT_ID`: avtomatik hisobot yuboriladigan chat
+- `EMAIL_*`: email yuborish sozlamalari
+
+## Auth oqimi
+
+1. Admin user yoki whitelist yozuvini kiritadi.
+2. Foydalanuvchi botda `/start` bosadi.
+3. Kontakt yuboradi va whitelist bilan mosligi tekshiriladi.
+4. Birinchi kirishda username/parol orqali tekshiriladi.
+5. Telegram account user bilan bog'lanadi.
+6. Keyingi kirishlarda bot userni avtomatik taniydi.
+7. Web panelga faqat qisqa muddatli signed link bilan yoki xavfsiz Mini App orqali kiriladi.
+
+## Production eslatma
+
+Tracked kod fayllarni serverda `nano` bilan tahrirlamang. Productionga xos hamma sozlama faqat `.env` ichida tursin. Shunda keyingi `git pull` paytida conflict kam bo'ladi.
+
+- Namuna: [`.env.example`](.env.example)
+- Qo'llanma: [`docs/PRODUCTION.md`](docs/PRODUCTION.md)
+- Production settings: [`config/settings/prod.py`](config/settings/prod.py)
+
+## Asosiy kommandalar
+
+```bash
+python manage.py check
+python manage.py makemigrations
+python manage.py migrate
+python manage.py collectstatic --noinput
+python manage.py send_periodic_report --period weekly --channel both
+python manage.py send_periodic_report --period monthly --channel both
+```
+
+## Texnik eslatma
+
+- Lokal uchun SQLite qulay
+- Production uchun PostgreSQL tavsiya qilinadi
+- Mini App tugmasi faqat `https://` bo'lsa chiqadi, chunki Telegram oddiy `http://` ni qabul qilmaydi
+- Default sut puli darhol ichki hisobga tushmaydi, avval pending bo'ladi, keyin qabul qilinganda ichki yoki tashqi hisobga o'tadi

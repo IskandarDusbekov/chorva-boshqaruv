@@ -130,24 +130,66 @@
   </div>
 
   <div class="bg-white rounded-2xl shadow p-5">
-    <h2 class="font-bold text-gray-800 mb-4">Tezkor o'tish</h2>
+    <div class="flex items-start justify-between gap-3 mb-4">
+      <div>
+        <h2 class="font-bold text-gray-800">Ferma o'sish tahlili</h2>
+        <p class="text-sm text-gray-400">{{ stats.month_growth.current_label }} holati {{ stats.month_growth.previous_label }} bilan solishtirildi</p>
+      </div>
+      <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">Oyma-oy tahlil</span>
+    </div>
     <div class="space-y-3">
-      <a href="{% url 'dashboard:milk_page' %}" class="flex items-center justify-between rounded-2xl bg-indigo-50 px-4 py-4 text-indigo-700">
-        <span class="font-semibold">Sut boshqaruvi</span>
-        <i class="fas fa-chevron-right"></i>
-      </a>
-      <a href="{% url 'dashboard:finance_page' %}" class="flex items-center justify-between rounded-2xl bg-emerald-50 px-4 py-4 text-emerald-700">
-        <span class="font-semibold">Kirim & Chiqim</span>
-        <i class="fas fa-chevron-right"></i>
-      </a>
-      <a href="{% url 'dashboard:workers_report_page' %}" class="flex items-center justify-between rounded-2xl bg-amber-50 px-4 py-4 text-amber-700">
-        <span class="font-semibold">Ishchilar hisobi</span>
-        <i class="fas fa-chevron-right"></i>
-      </a>
-      <a href="{% url 'dashboard:workers_page' %}" class="flex items-center justify-between rounded-2xl bg-sky-50 px-4 py-4 text-sky-700">
-        <span class="font-semibold">Xodimlarni boshqarish</span>
-        <i class="fas fa-chevron-right"></i>
-      </a>
+      <div class="rounded-2xl bg-indigo-50 p-4">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <div class="text-xs font-bold uppercase tracking-wide text-indigo-500">Sut hajmi</div>
+            <div class="mt-1 text-xl font-black text-indigo-700">{{ stats.month_growth.milk.current|floatformat:0|intcomma }} {{ stats.month_growth.milk.suffix }}</div>
+            <div class="text-xs text-slate-500">Oldingi oy: {{ stats.month_growth.milk.previous|floatformat:0|intcomma }} {{ stats.month_growth.milk.suffix }}</div>
+          </div>
+          <div class="text-right {% if stats.month_growth.milk.is_positive %}text-emerald-600{% else %}text-rose-600{% endif %}">
+            <div class="text-lg font-black">{{ stats.month_growth.milk.percent|floatformat:1 }}%</div>
+            <div class="text-xs font-semibold">{% if stats.month_growth.milk.is_positive %}+{% endif %}{{ stats.month_growth.milk.difference|floatformat:0|intcomma }} {{ stats.month_growth.milk.suffix }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="rounded-2xl bg-emerald-50 p-4">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <div class="text-xs font-bold uppercase tracking-wide text-emerald-500">Kirim tahlili</div>
+            <div class="mt-1 text-xl font-black text-emerald-700">{{ stats.month_growth.income.current|floatformat:0|intcomma }} UZS</div>
+            <div class="text-xs text-slate-500">Oldingi oy: {{ stats.month_growth.income.previous|floatformat:0|intcomma }} UZS</div>
+          </div>
+          <div class="text-right {% if stats.month_growth.income.is_positive %}text-emerald-600{% else %}text-rose-600{% endif %}">
+            <div class="text-lg font-black">{{ stats.month_growth.income.percent|floatformat:1 }}%</div>
+            <div class="text-xs font-semibold">{% if stats.month_growth.income.is_positive %}+{% endif %}{{ stats.month_growth.income.difference|floatformat:0|intcomma }} UZS</div>
+          </div>
+        </div>
+      </div>
+      <div class="rounded-2xl bg-rose-50 p-4">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <div class="text-xs font-bold uppercase tracking-wide text-rose-500">Chiqim tahlili</div>
+            <div class="mt-1 text-xl font-black text-rose-700">{{ stats.month_growth.expense.current|floatformat:0|intcomma }} UZS</div>
+            <div class="text-xs text-slate-500">Oldingi oy: {{ stats.month_growth.expense.previous|floatformat:0|intcomma }} UZS</div>
+          </div>
+          <div class="text-right {% if stats.month_growth.expense.is_positive %}text-rose-600{% else %}text-emerald-600{% endif %}">
+            <div class="text-lg font-black">{{ stats.month_growth.expense.percent|floatformat:1 }}%</div>
+            <div class="text-xs font-semibold">{% if stats.month_growth.expense.is_positive %}+{% endif %}{{ stats.month_growth.expense.difference|floatformat:0|intcomma }} UZS</div>
+          </div>
+        </div>
+      </div>
+      <div class="rounded-2xl bg-sky-50 p-4">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <div class="text-xs font-bold uppercase tracking-wide text-sky-500">Ichki hisob natijasi</div>
+            <div class="mt-1 text-xl font-black text-sky-700">{{ stats.month_growth.internal_net.current|floatformat:0|intcomma }} UZS</div>
+            <div class="text-xs text-slate-500">Oldingi oy: {{ stats.month_growth.internal_net.previous|floatformat:0|intcomma }} UZS</div>
+          </div>
+          <div class="text-right {% if stats.month_growth.internal_net.is_positive %}text-emerald-600{% else %}text-rose-600{% endif %}">
+            <div class="text-lg font-black">{{ stats.month_growth.internal_net.percent|floatformat:1 }}%</div>
+            <div class="text-xs font-semibold">{% if stats.month_growth.internal_net.is_positive %}+{% endif %}{{ stats.month_growth.internal_net.difference|floatformat:0|intcomma }} UZS</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -213,7 +255,7 @@
     <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">Audit log</span>
   </div>
   <div class="space-y-3">
-    {% for log in recent_logs %}
+    {% for log in logs_page_obj %}
     <div class="rounded-3xl border border-slate-100 bg-slate-50 p-4">
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div class="flex min-w-0 gap-3">
@@ -295,6 +337,7 @@
     <div class="rounded-2xl bg-slate-50 p-5 text-center text-sm text-slate-400">Hali audit log yo'q</div>
     {% endfor %}
   </div>
+  {% include "dashboard/partials/pagination.html" with page_obj=logs_page_obj page_param="logs_page" query_suffix=date_query_suffix %}
 </div>
 
 <div id="priceModal" class="hidden fixed inset-0 bg-black/40 p-4 z-50 overflow-y-auto">
