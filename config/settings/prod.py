@@ -28,8 +28,15 @@ CSRF_TRUSTED_ORIGINS = _env_list("CSRF_TRUSTED_ORIGINS")
 if not ALLOWED_HOSTS:
     raise ImproperlyConfigured("ALLOWED_HOSTS production .env ichida kamida bitta domain bo'lishi kerak.")
 
-DATABASE_ENGINE = os.getenv("DATABASE_ENGINE", "postgresql")
-if DATABASE_ENGINE == "postgresql":
+DATABASE_ENGINE = os.getenv("DATABASE_ENGINE", "sqlite").lower()
+if DATABASE_ENGINE == "sqlite":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": os.getenv("SQLITE_NAME", str(BASE_DIR / "db.sqlite3")),
+        }
+    }
+elif DATABASE_ENGINE == "postgresql":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
@@ -70,7 +77,7 @@ elif DATABASE_ENGINE == "mysql":
         }
     }
 else:
-    raise ImproperlyConfigured("DATABASE_ENGINE faqat 'postgresql' yoki 'mysql' bo'lishi kerak.")
+    raise ImproperlyConfigured("DATABASE_ENGINE faqat 'sqlite', 'postgresql' yoki 'mysql' bo'lishi kerak.")
 
 SECURE_SSL_REDIRECT = _env_bool("SECURE_SSL_REDIRECT", True)
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
