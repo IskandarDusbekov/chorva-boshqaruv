@@ -5,7 +5,7 @@ from aiogram.types import KeyboardButton, Message, ReplyKeyboardMarkup
 from asgiref.sync import sync_to_async
 from django.core.exceptions import PermissionDenied
 
-from bot.keyboards import main_menu_keyboard
+from bot.keyboards import main_menu_keyboard, mini_app_inline_keyboard
 from bot.states import LoginStates
 
 from .services import (
@@ -29,6 +29,16 @@ def contact_keyboard():
     )
 
 
+async def _send_verified_main_menu(message: Message, user, text: str):
+    await message.answer(text, reply_markup=main_menu_keyboard(user.role))
+    mini_app_keyboard = mini_app_inline_keyboard(user.role)
+    if mini_app_keyboard:
+        await message.answer(
+            "Mini Appni shu inline tugma orqali oching. Telegram ma'lumoti shu yo'l bilan to'g'ri keladi.",
+            reply_markup=mini_app_keyboard,
+        )
+
+
 async def restart_auth_flow(message: Message, state: FSMContext, text):
     await state.clear()
     await state.set_state(LoginStates.waiting_for_contact)
@@ -49,9 +59,10 @@ async def start_handler(message: Message, state: FSMContext):
     user = await sync_to_async(get_user_by_telegram_id)(message.from_user.id)
     if user and user.is_telegram_verified:
         await state.clear()
-        await message.answer(
+        await _send_verified_main_menu(
+            message,
+            user,
             "Assalomu alaykum. Siz tasdiqlangansiz, menyudan davom eting.",
-            reply_markup=main_menu_keyboard(user.role),
         )
         return
 
@@ -164,7 +175,8 @@ async def password_handler(message: Message, state: FSMContext):
 
     await sync_to_async(reset_failed_login_attempts)(message.from_user.id)
     await state.clear()
-    await message.answer(
+    await _send_verified_main_menu(
+        message,
+        user,
         f"Xush kelibsiz, {user.full_name}. Telegram akkauntingiz muvaffaqiyatli bog'landi.",
-        reply_markup=main_menu_keyboard(user.role),
     )
