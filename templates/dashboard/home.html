@@ -3,24 +3,8 @@
 
 {% block title %}Asosiy Dashboard{% endblock %}
 {% block page_title %}Asosiy Dashboard{% endblock %}
-{% block page_subtitle %}Ferma holati, progress va eng muhim boshqaruv nuqtalari{% endblock %}
 
-{% block header_actions %}
-<div class="action-grid mb-3 w-full lg:mb-0 lg:max-w-xl">
-  <button type="button" onclick="toggleMilkModal()" class="action-button action-primary">
-    <i class="fas fa-plus"></i><span>Sut qo'shish</span>
-  </button>
-  <button type="button" onclick="togglePriceModal()" class="action-button action-soft">
-    <i class="fas fa-tag"></i><span>Narx belgilash</span>
-  </button>
-  <button type="button" onclick="toggleAdvanceModal()" class="action-button action-secondary">
-    <i class="fas fa-hand-holding-dollar"></i><span>Avans berish</span>
-  </button>
-  <a href="{% url 'dashboard:history_page' %}" class="action-button action-soft">
-    <i class="fas fa-clock-rotate-left"></i><span>Tarix</span>
-  </a>
-</div>
-{% endblock %}
+
 
 {% block content %}
 <section class="grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -230,6 +214,7 @@
       {% endfor %}
     </div>
   </article>
+
 </section>
 
 <section class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[1.1fr_minmax(0,1fr)_minmax(0,1fr)]">
