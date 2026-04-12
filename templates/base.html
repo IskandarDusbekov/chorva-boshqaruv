@@ -7,92 +7,288 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
-        body { background: #f1f5f9; font-family: Inter, "Segoe UI", sans-serif; }
-        .sidebar-link.active { background: rgb(238 242 255); color: rgb(67 56 202); font-weight: 600; }
-        .bottom-link.active { color: rgb(79 70 229); font-weight: 600; }
-        .mobile-table { -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
-        .mobile-table > table { min-width: 100%; }
-        @media (max-width: 767px) {
-            body { background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%); }
-            .page-shell { padding: 1rem 1rem 6.75rem; }
-            .page-header { margin-bottom: 1rem; align-items: flex-start; }
-            .page-title { font-size: 2rem; line-height: 1.05; letter-spacing: -0.04em; }
-            .page-subtitle { margin-top: 0.35rem; max-width: 26rem; font-size: 0.98rem; line-height: 1.45; }
-            .page-actions { display: grid; width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.65rem; }
-            .page-actions > * { display: flex; min-height: 3rem; width: 100%; align-items: center; justify-content: center; text-align: center; }
-            .page-actions--triple > :last-child { grid-column: 1 / -1; }
-            .bottom-nav { padding: 0.45rem 0.6rem calc(0.55rem + env(safe-area-inset-bottom)); box-shadow: 0 -12px 30px rgba(15, 23, 42, 0.08); }
-            .bottom-nav-grid { gap: 0.2rem; }
-            .bottom-link { border-radius: 1rem; padding: 0.55rem 0.2rem 0.5rem; font-size: 0.76rem; font-weight: 600; }
-            .bottom-link i { display: block; margin-bottom: 0.32rem; font-size: 1.16rem; }
-            .mobile-table { margin-inline: -0.35rem; padding-inline: 0.35rem; padding-bottom: 0.25rem; }
-            .mobile-table > table { min-width: 760px; }
+        :root {
+            --page-bg: #f5f7fb;
+            --card-bg: rgba(255, 255, 255, 0.96);
+            --border-soft: rgba(148, 163, 184, 0.18);
+            --text-main: #0f172a;
+            --text-soft: #64748b;
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --accent: #f59e0b;
+        }
+
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(99, 102, 241, 0.08), transparent 28%),
+                radial-gradient(circle at top right, rgba(14, 165, 233, 0.08), transparent 22%),
+                linear-gradient(180deg, #f8fbff 0%, var(--page-bg) 100%);
+            color: var(--text-main);
+            font-family: Inter, "Segoe UI", sans-serif;
+        }
+
+        .app-sidebar {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(14px);
+            border-right: 1px solid var(--border-soft);
+        }
+
+        .sidebar-link,
+        .bottom-link {
+            transition: all 0.18s ease;
+        }
+
+        .sidebar-link.active {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(59, 130, 246, 0.08));
+            color: var(--primary-dark);
+            box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.15);
+            font-weight: 700;
+        }
+
+        .bottom-link.active {
+            background: linear-gradient(180deg, rgba(79, 70, 229, 0.12), rgba(59, 130, 246, 0.06));
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+
+        .surface-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-soft);
+            border-radius: 1.6rem;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+        }
+
+        .stats-card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.92));
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            border-radius: 1.6rem;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+        }
+
+        .action-grid {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .action-button {
+            display: inline-flex;
+            min-height: 3.35rem;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            border-radius: 1.1rem;
+            padding: 0.95rem 1rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+        }
+
+        .action-button:hover {
+            transform: translateY(-1px);
+        }
+
+        .action-button:active {
+            transform: translateY(0);
+            opacity: 0.92;
+        }
+
+        .action-primary {
+            background: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
+            color: white;
+            box-shadow: 0 12px 20px rgba(79, 70, 229, 0.2);
+        }
+
+        .action-secondary {
+            background: linear-gradient(135deg, #f59e0b 0%, #fb923c 100%);
+            color: white;
+            box-shadow: 0 12px 20px rgba(245, 158, 11, 0.18);
+        }
+
+        .action-soft {
+            background: linear-gradient(135deg, #eef2ff 0%, #eff6ff 100%);
+            color: var(--primary-dark);
+            box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.08);
+        }
+
+        .mobile-table {
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+
+        .mobile-table > table {
+            min-width: 100%;
+        }
+
+        .sticky-shell {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            margin-bottom: 1.25rem;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+            background: rgba(245, 247, 251, 0.85);
+            backdrop-filter: blur(14px);
+        }
+
+        @media (max-width: 1023px) {
+            .page-shell {
+                padding: 1rem 1rem 6.7rem;
+            }
+
+            .sticky-shell {
+                margin-inline: -1rem;
+                padding-inline: 1rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+                line-height: 1.04;
+                letter-spacing: -0.04em;
+            }
+
+            .page-subtitle {
+                max-width: 30rem;
+                font-size: 0.95rem;
+                line-height: 1.45;
+            }
+
+            .action-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .action-grid.action-grid--triple > :last-child {
+                grid-column: 1 / -1;
+            }
+
+            .bottom-nav {
+                padding: 0.45rem 0.6rem calc(0.55rem + env(safe-area-inset-bottom));
+                background: rgba(255, 255, 255, 0.96);
+                backdrop-filter: blur(16px);
+                box-shadow: 0 -14px 32px rgba(15, 23, 42, 0.08);
+            }
+
+            .bottom-link {
+                border-radius: 1rem;
+                padding: 0.65rem 0.22rem 0.55rem;
+                font-size: 0.76rem;
+                line-height: 1.1;
+            }
+
+            .bottom-link i {
+                display: block;
+                margin-bottom: 0.34rem;
+                font-size: 1.18rem;
+            }
+
+            .mobile-table {
+                margin-inline: -0.45rem;
+                padding-inline: 0.45rem;
+                padding-bottom: 0.25rem;
+            }
+
+            .mobile-table > table {
+                min-width: 760px;
+            }
+
             .mobile-table > table th,
-            .mobile-table > table td { white-space: nowrap; padding-right: 1rem; }
-            .mobile-table > table th { font-size: 0.73rem; letter-spacing: 0.01em; }
-            .mobile-table > table td { font-size: 0.92rem; }
-            .mobile-panel { border-radius: 1.6rem; padding: 1rem; box-shadow: 0 12px 30px rgba(148, 163, 184, 0.12); }
-            .mobile-stat-value { font-size: 2rem; line-height: 1; }
-            .mobile-compact-note { font-size: 0.8rem; line-height: 1.35; }
+            .mobile-table > table td {
+                white-space: nowrap;
+                padding-right: 1rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .page-shell {
+                padding: 2rem 2rem 2.25rem;
+                margin-left: 18rem;
+            }
         }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <aside class="hidden md:block fixed top-0 left-0 h-full w-72 bg-white shadow-2xl z-30">
-        <div class="flex flex-col h-full">
-            <div class="px-6 py-7 border-b border-gray-100 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center shadow-lg">
-                    <i class="fas fa-tractor text-white text-xl"></i>
+    <aside class="app-sidebar hidden lg:block fixed inset-y-0 left-0 w-72 z-40">
+        <div class="flex h-full flex-col px-5 py-6">
+            <a href="{% url 'dashboard:home' %}" class="flex items-center gap-3 rounded-3xl px-3 py-3">
+                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-sky-500 text-white shadow-lg shadow-indigo-200">
+                    <i class="fas fa-tractor text-lg"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-extrabold text-gray-800">Chorvachilik</h1>
-                    <p class="text-xs text-gray-500">Smart Ferma</p>
+                    <div class="text-xl font-black tracking-tight text-slate-900">Chorva Panel</div>
+                    <div class="text-xs font-medium text-slate-500">Smart ferma nazorati</div>
                 </div>
-            </div>
-            <nav class="flex-1 px-4 py-6 space-y-2">
-                <a href="{% url 'dashboard:home' %}" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 {% if nav_active == 'home' %}active{% endif %}"><i class="fas fa-house w-5"></i><span>Asosiy Dashboard</span></a>
-                <a href="{% url 'dashboard:milk_page' %}" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 {% if nav_active == 'milk' %}active{% endif %}"><i class="fas fa-glass-water-droplet w-5"></i><span>Sut boshqaruvi</span></a>
-                <a href="{% url 'dashboard:finance_page' %}" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 {% if nav_active == 'finance' %}active{% endif %}"><i class="fas fa-wallet w-5"></i><span>Kirim & Chiqim</span></a>
-                <a href="{% url 'dashboard:workers_report_page' %}" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 {% if nav_active == 'workers_report' %}active{% endif %}"><i class="fas fa-file-invoice-dollar w-5"></i><span>Ishchilar hisobi</span></a>
-                <a href="{% url 'dashboard:workers_page' %}" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-gray-50 {% if nav_active == 'workers_manage' %}active{% endif %}"><i class="fas fa-users-gear w-5"></i><span>Xodimlarni boshqarish</span></a>
+            </a>
+
+            <nav class="mt-7 space-y-2">
+                <a href="{% url 'dashboard:home' %}" class="sidebar-link flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-500 {% if nav_active == 'home' %}active{% endif %}">
+                    <i class="fas fa-house w-5 text-base"></i><span>Bosh sahifa</span>
+                </a>
+                <a href="{% url 'dashboard:milk_page' %}" class="sidebar-link flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-500 {% if nav_active == 'milk' %}active{% endif %}">
+                    <i class="fas fa-glass-water-droplet w-5 text-base"></i><span>Sut</span>
+                </a>
+                <a href="{% url 'dashboard:finance_page' %}" class="sidebar-link flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-500 {% if nav_active == 'finance' %}active{% endif %}">
+                    <i class="fas fa-wallet w-5 text-base"></i><span>Moliya</span>
+                </a>
+                <a href="{% url 'dashboard:workers_page' %}" class="sidebar-link flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-500 {% if nav_active == 'workers' %}active{% endif %}">
+                    <i class="fas fa-users w-5 text-base"></i><span>Xodimlar</span>
+                </a>
+                <a href="{% url 'dashboard:history_page' %}" class="sidebar-link flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-500 {% if nav_active == 'history' %}active{% endif %}">
+                    <i class="fas fa-clock-rotate-left w-5 text-base"></i><span>Tarix</span>
+                </a>
             </nav>
         </div>
     </aside>
 
-    <div class="bottom-nav md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t z-40">
-        <div class="bottom-nav-grid grid grid-cols-5 p-2 text-center text-[11px]">
-            <a href="{% url 'dashboard:home' %}" class="bottom-link text-gray-500 {% if nav_active == 'home' %}active{% endif %}"><i class="fas fa-house"></i>Bosh</a>
-            <a href="{% url 'dashboard:milk_page' %}" class="bottom-link text-gray-500 {% if nav_active == 'milk' %}active{% endif %}"><i class="fas fa-tint"></i>Sut</a>
-            <a href="{% url 'dashboard:finance_page' %}" class="bottom-link text-gray-500 {% if nav_active == 'finance' %}active{% endif %}"><i class="fas fa-wallet"></i>Moliya</a>
-            <a href="{% url 'dashboard:workers_report_page' %}" class="bottom-link text-gray-500 {% if nav_active == 'workers_report' %}active{% endif %}"><i class="fas fa-id-card"></i>Hisob</a>
-            <a href="{% url 'dashboard:workers_page' %}" class="bottom-link text-gray-500 {% if nav_active == 'workers_manage' %}active{% endif %}"><i class="fas fa-users-cog"></i>Xodim</a>
+    <div class="bottom-nav fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/80 lg:hidden">
+        <div class="grid grid-cols-5 gap-1 text-center">
+            <a href="{% url 'dashboard:home' %}" class="bottom-link text-slate-500 {% if nav_active == 'home' %}active{% endif %}"><i class="fas fa-house"></i>Bosh</a>
+            <a href="{% url 'dashboard:milk_page' %}" class="bottom-link text-slate-500 {% if nav_active == 'milk' %}active{% endif %}"><i class="fas fa-glass-water-droplet"></i>Sut</a>
+            <a href="{% url 'dashboard:finance_page' %}" class="bottom-link text-slate-500 {% if nav_active == 'finance' %}active{% endif %}"><i class="fas fa-wallet"></i>Moliya</a>
+            <a href="{% url 'dashboard:workers_page' %}" class="bottom-link text-slate-500 {% if nav_active == 'workers' %}active{% endif %}"><i class="fas fa-users"></i>Xodimlar</a>
+            <a href="{% url 'dashboard:history_page' %}" class="bottom-link text-slate-500 {% if nav_active == 'history' %}active{% endif %}"><i class="fas fa-clock-rotate-left"></i>Tarix</a>
         </div>
     </div>
 
-    <div class="page-shell max-w-7xl mx-auto p-4 md:p-8 md:ml-72 pb-24 md:pb-8">
+    <main class="page-shell">
         {% if messages %}
-        <div class="space-y-2 mb-4">
+        <div class="mb-4 space-y-2">
             {% for message in messages %}
-            <div class="rounded-2xl px-4 py-3 shadow {% if message.tags == 'success' %}bg-emerald-50 text-emerald-700{% elif message.tags == 'warning' %}bg-amber-50 text-amber-700{% else %}bg-rose-50 text-rose-700{% endif %}">
+            <div class="surface-card px-4 py-3 text-sm font-medium {% if message.tags == 'success' %}text-emerald-700{% elif message.tags == 'warning' %}text-amber-700{% else %}text-rose-700{% endif %}">
                 {{ message }}
             </div>
             {% endfor %}
         </div>
         {% endif %}
 
-        <div class="page-header flex flex-wrap justify-between items-center gap-3 mb-6">
-            <div>
-                <h1 class="page-title text-3xl font-black text-gray-800">{% block page_title %}Ferma paneli{% endblock %}</h1>
-                <p class="page-subtitle text-gray-500">{% block page_subtitle %}Ferma boshqaruvi{% endblock %}</p>
+        <div class="sticky-shell">
+            <div class="flex items-center justify-between gap-4 py-4">
+                <div class="flex min-w-0 items-center gap-3">
+                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-sky-500 text-white shadow-lg shadow-indigo-200">
+                        <i class="fas fa-chart-line text-lg"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="truncate text-sm font-bold uppercase tracking-[0.16em] text-indigo-500">BotGate Dashboard</div>
+                        <h1 class="page-title truncate text-3xl font-black text-slate-900">{% block page_title %}Ferma paneli{% endblock %}</h1>
+                        <p class="page-subtitle mt-1 text-sm font-medium text-slate-500">{% block page_subtitle %}Ferma boshqaruvi{% endblock %}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="hidden text-right sm:block">
+                        <div class="text-sm font-bold text-slate-700">{{ request.user.full_name|default:request.user.username }}</div>
+                        <div class="text-xs font-medium text-slate-400">{{ request.user.get_role_display|default:"Foydalanuvchi" }}</div>
+                    </div>
+                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-slate-700 shadow-sm ring-1 ring-slate-200">
+                        <span class="text-sm font-black">{{ request.user.full_name|default:request.user.username|slice:":1"|upper }}</span>
+                    </div>
+                </div>
             </div>
             {% block header_actions %}{% endblock %}
         </div>
 
         {% block content %}{% endblock %}
-    </div>
+    </main>
+
     <div id="confirmModal" class="hidden fixed inset-0 z-[100] bg-slate-950/45 p-4">
-        <div class="mx-auto mt-24 max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+        <div class="mx-auto mt-24 max-w-md rounded-[28px] bg-white p-6 shadow-2xl">
             <div class="mb-4 flex items-center gap-3">
                 <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
                     <i class="fas fa-triangle-exclamation text-xl"></i>
@@ -109,6 +305,7 @@
             </div>
         </div>
     </div>
+
     {% block extra_scripts %}{% endblock %}
     <script>
         let confirmModalForm = null;

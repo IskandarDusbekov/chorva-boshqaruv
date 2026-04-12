@@ -33,7 +33,10 @@ UZBEK_MONTHS = {
 
 
 def apply_form_control_styles(form):
-    base_class = "w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 shadow-sm focus:border-indigo-500 focus:outline-none"
+    base_class = (
+        "w-full rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-700 "
+        "shadow-sm transition focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-indigo-100"
+    )
     checkbox_class = "h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
     for field in form.fields.values():
         widget = field.widget

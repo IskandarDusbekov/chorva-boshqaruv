@@ -9,6 +9,7 @@ app_name = "dashboard"
 urlpatterns = [
     path("open/", account_views.access_with_token, name="panel_access_open"),
     path("", views.home, name="home"),
+    path("history/", views.history_page, name="history_page"),
     path("milk/", views.milk_page, name="milk_page"),
     path("entries/", views.entry_list, name="entry_list"),
     path("entries/create/", views.entry_create, name="entry_create"),

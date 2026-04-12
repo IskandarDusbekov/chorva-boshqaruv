@@ -5,9 +5,11 @@ from datetime import datetime, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 
 from apps.accounts.models import AuditLog
@@ -124,6 +126,11 @@ def _payment_query(date_from, date_to, year=None, month=None, worker_id=None):
     )
 
 
+def _history_query(date_from, date_to):
+    """Tarix sahifasi paginatsiyasi uchun query satrini qaytaradi."""
+    return f"&date_from={date_from:%Y-%m-%d}&date_to={date_to:%Y-%m-%d}"
+
+
 def _audit_action(user, action, object_type, object_id="", meta=None):
     """Web paneldagi muhim o'zgarishlarni audit logga yozadi."""
     create_audit_log(
@@ -140,6 +147,39 @@ def _recent_logs():
     return AuditLog.objects.select_related("user").order_by("-created_at")
 
 
+def _worker_cards(payroll):
+    """Xodimlar sahifasi uchun yuqori kartalarni tayyorlaydi."""
+    total_month_paid_uzs = sum((item["month_paid_uzs"] for item in payroll), 0)
+    total_month_paid_usd = sum((item["month_paid_usd"] for item in payroll), 0)
+    outstanding_uzs = sum((item["remaining"] for item in payroll if item["currency"] == "UZS" and item["remaining"] > 0), 0)
+    outstanding_usd = sum((item["remaining"] for item in payroll if item["currency"] == "USD" and item["remaining"] > 0), 0)
+    overpaid_count = sum(1 for item in payroll if item["remaining"] < 0)
+    return {
+        "total_workers": len(payroll),
+        "month_paid_uzs": total_month_paid_uzs,
+        "month_paid_usd": total_month_paid_usd,
+        "outstanding_uzs": outstanding_uzs,
+        "outstanding_usd": outstanding_usd,
+        "overpaid_count": overpaid_count,
+    }
+
+
+def _history_cards(logs_queryset):
+    """Audit loglardan umumiy tezkor ko'rsatkichlarni yig'adi."""
+    return {
+        "total": logs_queryset.count(),
+        "created": logs_queryset.filter(action__icontains="created").count(),
+        "updated": logs_queryset.filter(action__icontains="updated").count(),
+        "deleted": logs_queryset.filter(action__icontains="deleted").count(),
+        "access": logs_queryset.filter(
+            Q(action__icontains="login")
+            | Q(action__icontains="access")
+            | Q(action__icontains="verified")
+            | Q(action__icontains="logout")
+        ).count(),
+    }
+
+
 @login_required
 def home(request):
     """Asosiy dashboard: kartalar, grafiklar va loglarni chiqaradi."""
@@ -147,7 +187,7 @@ def home(request):
     date_from = _parse_date(request.GET.get("date_from"), today - timedelta(days=6))
     date_to = _parse_date(request.GET.get("date_to"), today)
     overview = get_dashboard_overview(date_from, date_to)
-    logs_page_obj = Paginator(_recent_logs(), 10).get_page(request.GET.get("logs_page"))
+    recent_logs_preview = list(_recent_logs()[:4])
 
     context = {
         "stats": overview,
@@ -160,7 +200,7 @@ def home(request):
         "finance_form": FinanceEntryForm(initial={"entry_date": today}),
         "worker_form": WorkerForm(),
         "advance_form": WorkerAdvanceForm(initial={"advance_date": today, "month_reference": today.replace(day=1)}),
-        "logs_page_obj": logs_page_obj,
+        "recent_logs_preview": recent_logs_preview,
         "role": request.user.role,
         "nav_active": "home",
     }
@@ -430,6 +470,7 @@ def workers_page(request):
     payroll = get_worker_payroll_summary()
     context = {
         "stats": get_dashboard_overview(today - timedelta(days=30), today),
+        "worker_cards": _worker_cards(payroll),
         "worker_page_obj": Paginator(payroll, 8).get_page(request.GET.get("workers_page")),
         "worker_form": WorkerForm(),
         "advance_form": WorkerAdvanceForm(initial={"advance_date": today, "month_reference": today.replace(day=1)}),
@@ -444,7 +485,7 @@ def workers_page(request):
         "payment_query_suffix": _payment_query(date_from, date_to, year, month, worker_id),
         "selected_worker_id": worker_id,
         "workers": Worker.objects.filter(is_active=True).order_by("full_name"),
-        "nav_active": "workers_manage",
+        "nav_active": "workers",
     }
     return render(request, "dashboard/workers_page.html", context)
 
@@ -479,6 +520,7 @@ def worker_edit(request, pk):
     payroll = get_worker_payroll_summary()
     context = {
         "stats": get_dashboard_overview(today - timedelta(days=30), today),
+        "worker_cards": _worker_cards(payroll),
         "worker_page_obj": Paginator(payroll, 8).get_page(request.GET.get("workers_page")),
         "worker_form": form,
         "advance_form": WorkerAdvanceForm(initial={"advance_date": today, "month_reference": today.replace(day=1)}),
@@ -493,7 +535,7 @@ def worker_edit(request, pk):
         "payment_query_suffix": _payment_query(date_from, date_to, year, month, worker_id),
         "selected_worker_id": worker_id,
         "workers": Worker.objects.filter(is_active=True).order_by("full_name"),
-        "nav_active": "workers_manage",
+        "nav_active": "workers",
     }
     return render(request, "dashboard/workers_page.html", context)
 
@@ -577,6 +619,7 @@ def worker_payment_edit(request, pk):
     payroll = get_worker_payroll_summary()
     context = {
         "stats": get_dashboard_overview(today - timedelta(days=30), today),
+        "worker_cards": _worker_cards(payroll),
         "worker_page_obj": Paginator(payroll, 8).get_page(request.GET.get("workers_page")),
         "worker_form": WorkerForm(),
         "advance_form": form,
@@ -591,7 +634,7 @@ def worker_payment_edit(request, pk):
         "payment_query_suffix": _payment_query(date_from, date_to, year, month, worker_id),
         "selected_worker_id": worker_id,
         "workers": Worker.objects.filter(is_active=True).order_by("full_name"),
-        "nav_active": "workers_manage",
+        "nav_active": "workers",
     }
     return render(request, "dashboard/workers_page.html", context)
 
@@ -614,35 +657,31 @@ def worker_payment_delete(request, pk):
 
 @login_required
 def workers_report_page(request):
+    redirect_url = reverse("dashboard:workers_page")
+    query_string = request.GET.urlencode()
+    if query_string:
+        redirect_url = f"{redirect_url}?{query_string}"
+    return redirect(redirect_url)
+
+
+@login_required
+def history_page(request):
+    """Tarix sahifasi: audit log va tizim amallari jamlanmasi."""
     today = _today()
-    date_from = _parse_date(request.GET.get("payment_date_from"), today - timedelta(days=30))
-    date_to = _parse_date(request.GET.get("payment_date_to"), today)
-    year = _parse_year(request.GET.get("payment_year"))
-    month = _parse_int(request.GET.get("payment_month"))
-    if month and not year:
-        year = today.year
-    worker_id = _parse_int(request.GET.get("worker_id"))
-    date_from, date_to = _apply_year_month_period(date_from, date_to, year, month)
-    payroll = get_worker_payroll_summary()
-    if worker_id:
-        payroll = [item for item in payroll if item["id"] == worker_id]
-    payments = filter_worker_payments(date_from=date_from, date_to=date_to, worker_id=worker_id)
-    page_obj = Paginator(payroll, 12).get_page(request.GET.get("page"))
+    date_from = _parse_date(request.GET.get("date_from"), today - timedelta(days=14))
+    date_to = _parse_date(request.GET.get("date_to"), today)
+    logs_queryset = _recent_logs().filter(created_at__date__gte=date_from, created_at__date__lte=date_to)
+    logs_page_obj = Paginator(logs_queryset, 12).get_page(request.GET.get("page"))
     context = {
-        "worker_page_obj": page_obj,
-        "payment_page_obj": Paginator(payments, 12).get_page(request.GET.get("payment_page")),
-        "nav_active": "workers_report",
         "stats": get_dashboard_overview(today - timedelta(days=30), today),
-        "payment_date_from": date_from,
-        "payment_date_to": date_to,
-        "payment_year": year,
-        "payment_month": month,
-        "month_choices": MONTH_CHOICES,
-        "payment_query_suffix": _payment_query(date_from, date_to, year, month, worker_id),
-        "selected_worker_id": worker_id,
-        "workers": Worker.objects.filter(is_active=True).order_by("full_name"),
+        "history_cards": _history_cards(logs_queryset),
+        "logs_page_obj": logs_page_obj,
+        "date_from": date_from,
+        "date_to": date_to,
+        "history_query_suffix": _history_query(date_from, date_to),
+        "nav_active": "history",
     }
-    return render(request, "dashboard/workers_report_page.html", context)
+    return render(request, "dashboard/history_page.html", context)
 
 
 @login_required
