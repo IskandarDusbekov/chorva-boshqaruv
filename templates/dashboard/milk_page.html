@@ -12,29 +12,29 @@
 {% endblock %}
 
 {% block content %}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
-  <div class="bg-violet-50 rounded-2xl shadow p-5 border border-violet-100">
+<div class="grid grid-cols-2 gap-3 mb-4 xl:grid-cols-3">
+  <div class="bg-violet-50 rounded-xl shadow-sm p-4 border border-violet-100">
     <div class="text-sm text-violet-700 font-semibold flex items-center gap-2"><i class="fas fa-tags"></i> Aktiv sut narxi</div>
     {% if stats.active_milk_price %}
-    <div class="text-3xl font-black text-violet-900 mt-2">{{ stats.active_milk_price.price_per_liter|floatformat:0|intcomma }} {{ stats.active_milk_price.currency }}</div>
-    <div class="text-sm text-violet-700 mt-1">{{ stats.active_milk_price.effective_from }} dan</div>
+    <div class="text-2xl font-black text-violet-900 mt-2">{{ stats.active_milk_price.price_per_liter|floatformat:0|intcomma }} {{ stats.active_milk_price.currency }}</div>
+    <div class="text-xs text-violet-700 mt-1">{{ stats.active_milk_price.effective_from }} dan</div>
     {% else %}
-    <div class="text-sm text-gray-400 mt-2">Hali sut narxi belgilanmagan</div>
+    <div class="text-xs text-gray-400 mt-2">Hali sut narxi belgilanmagan</div>
     {% endif %}
   </div>
-  <div class="bg-sky-50 rounded-2xl shadow p-5 border border-sky-100">
+  <div class="bg-sky-50 rounded-xl shadow-sm p-4 border border-sky-100">
     <div class="text-sm text-sky-700 font-semibold flex items-center gap-2"><i class="fas fa-hourglass-half"></i> Kutilayotgan sut puli</div>
-    <div class="text-3xl font-black text-sky-900 mt-2 break-all">{{ stats.pending_milk_totals.UZS|floatformat:0|intcomma }} UZS</div>
-    <div class="text-lg font-extrabold text-sky-700 break-all">{{ stats.pending_milk_totals.USD|floatformat:2|intcomma }} USD</div>
+    <div class="text-2xl font-black text-sky-900 mt-2 break-all">{{ stats.pending_milk_totals.UZS|floatformat:0|intcomma }} UZS</div>
+    <div class="text-sm font-extrabold text-sky-700 break-all">{{ stats.pending_milk_totals.USD|floatformat:2|intcomma }} USD</div>
   </div>
-  <div class="bg-emerald-50 rounded-2xl shadow p-5 border border-emerald-100">
+  <div class="bg-emerald-50 rounded-xl shadow-sm p-4 border border-emerald-100 col-span-2 xl:col-span-1">
     <div class="text-sm text-emerald-700 font-semibold flex items-center gap-2"><i class="fas fa-glass-water"></i> Shu oy jami sut</div>
-    <div class="text-3xl font-black text-emerald-900 mt-2">{{ current_month_total|floatformat:1|intcomma }} L</div>
-    <div class="text-sm text-emerald-700 mt-1">Joriy oy bo'yicha umumiy hajm</div>
+    <div class="text-2xl font-black text-emerald-900 mt-2">{{ current_month_total|floatformat:1|intcomma }} L</div>
+    <div class="text-xs text-emerald-700 mt-1">Joriy oy bo'yicha umumiy hajm</div>
   </div>
 </div>
 
-<div class="bg-white rounded-2xl shadow p-5 mb-6">
+<div class="bg-white rounded-xl shadow-sm p-4 mb-4">
   <div class="text-sm text-gray-500">Ko'rinadigan davr</div>
   <form method="get" class="grid grid-cols-2 gap-3 mt-3">
     <input type="date" name="date_from" value="{{ date_from|date:'Y-m-d' }}" class="border rounded-xl px-3 py-2">
@@ -43,8 +43,8 @@
   </form>
 </div>
 
-<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-  <div class="xl:col-span-2 bg-white rounded-2xl shadow p-5">
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+  <div class="xl:col-span-2 bg-white rounded-xl shadow-sm p-4">
     <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fas fa-table text-indigo-500"></i> Sut yozuvlari</h2>
     <div class="mobile-table overflow-x-auto">
       <table class="w-full text-sm">
@@ -84,7 +84,7 @@
     </div>
     {% include "dashboard/partials/pagination.html" with page_obj=milk_page_obj page_param="page" query_suffix=date_query_suffix %}
   </div>
-  <div class="bg-white rounded-2xl shadow p-5">
+  <div class="bg-white rounded-xl shadow-sm p-4">
     <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fas fa-circle-info text-sky-500"></i> Qisqa eslatma</h2>
     <p class="text-sm text-gray-500 mb-2">Ertalab yoki kechki sutni alohida kiritishingiz mumkin.</p>
     <p class="text-sm text-gray-500 mb-2">Bo'sh qoldirilgan maydon avvalgi qiymatini saqlaydi.</p>
@@ -92,11 +92,11 @@
   </div>
 </div>
 
-<div class="bg-white rounded-2xl shadow p-5 mt-6">
+<div class="bg-white rounded-xl shadow-sm p-4 mt-4">
   <h2 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fas fa-money-bill-transfer text-sky-500"></i> Kutilayotgan sut to'lovlari</h2>
   <div class="space-y-3">
     {% for item in pending_page_obj %}
-    <div class="border rounded-2xl p-4 flex flex-wrap items-end justify-between gap-3">
+    <div class="border rounded-xl p-3 flex flex-wrap items-end justify-between gap-3">
       <div>
         <div class="font-semibold">{{ item.entry_date }} | {{ item.amount|floatformat:2|intcomma }} {{ item.currency }}</div>
         <div class="text-sm text-gray-500">{{ item.related_milk_record.total_liters|floatformat:1|intcomma }} litr | {{ item.get_status_display }}</div>

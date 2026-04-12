@@ -1,32 +1,32 @@
 {% if page_obj.paginator.num_pages > 1 %}
-<div class="mt-5 flex flex-col gap-3 rounded-2xl bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
-  <div class="text-center text-sm font-semibold text-slate-500 sm:text-left">
+<div class="mt-4 flex flex-col gap-2 rounded-xl bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+  <div class="text-center text-xs font-semibold text-slate-500 sm:text-left">
     Sahifa <span class="text-indigo-700">{{ page_obj.number }}</span> / {{ page_obj.paginator.num_pages }}
-    <span class="text-slate-400">· {{ page_obj.paginator.count }} ta yozuv</span>
+    <span class="text-slate-400">| {{ page_obj.paginator.count }} ta yozuv</span>
   </div>
   <div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end">
     {% if page_obj.has_previous %}
-    <a href="?{{ page_param|default:'page' }}=1{{ query_suffix|default:'' }}" class="rounded-xl bg-white px-4 py-2 text-center text-sm font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-indigo-50">Birinchi</a>
-    <a href="?{{ page_param|default:'page' }}={{ page_obj.previous_page_number }}{{ query_suffix|default:'' }}" class="rounded-xl bg-white px-4 py-2 text-center text-sm font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-indigo-50">
+    <a href="?{{ page_param|default:'page' }}=1{{ query_suffix|default:'' }}" class="rounded-xl bg-white px-3 py-2 text-center text-xs font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-indigo-50">Birinchi</a>
+    <a href="?{{ page_param|default:'page' }}={{ page_obj.previous_page_number }}{{ query_suffix|default:'' }}" class="rounded-xl bg-white px-3 py-2 text-center text-xs font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-indigo-50">
       <i class="fas fa-chevron-left mr-1"></i> Oldingi
     </a>
     {% else %}
-    <span class="rounded-xl bg-slate-100 px-4 py-2 text-center text-sm font-bold text-slate-400">Birinchi</span>
-    <span class="rounded-xl bg-slate-100 px-4 py-2 text-center text-sm font-bold text-slate-400">
+    <span class="rounded-xl bg-slate-100 px-3 py-2 text-center text-xs font-bold text-slate-400">Birinchi</span>
+    <span class="rounded-xl bg-slate-100 px-3 py-2 text-center text-xs font-bold text-slate-400">
       <i class="fas fa-chevron-left mr-1"></i> Oldingi
     </span>
     {% endif %}
 
     {% if page_obj.has_next %}
-    <a href="?{{ page_param|default:'page' }}={{ page_obj.next_page_number }}{{ query_suffix|default:'' }}" class="rounded-xl bg-indigo-600 px-4 py-2 text-center text-sm font-bold text-white shadow-sm hover:bg-indigo-700">
+    <a href="?{{ page_param|default:'page' }}={{ page_obj.next_page_number }}{{ query_suffix|default:'' }}" class="rounded-xl bg-indigo-600 px-3 py-2 text-center text-xs font-bold text-white shadow-sm hover:bg-indigo-700">
       Keyingi <i class="fas fa-chevron-right ml-1"></i>
     </a>
-    <a href="?{{ page_param|default:'page' }}={{ page_obj.paginator.num_pages }}{{ query_suffix|default:'' }}" class="rounded-xl bg-white px-4 py-2 text-center text-sm font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-indigo-50">Oxirgi</a>
+    <a href="?{{ page_param|default:'page' }}={{ page_obj.paginator.num_pages }}{{ query_suffix|default:'' }}" class="rounded-xl bg-white px-3 py-2 text-center text-xs font-bold text-slate-700 shadow-sm ring-1 ring-slate-200 hover:bg-indigo-50">Oxirgi</a>
     {% else %}
-    <span class="rounded-xl bg-slate-100 px-4 py-2 text-center text-sm font-bold text-slate-400">
+    <span class="rounded-xl bg-slate-100 px-3 py-2 text-center text-xs font-bold text-slate-400">
       Keyingi <i class="fas fa-chevron-right ml-1"></i>
     </span>
-    <span class="rounded-xl bg-slate-100 px-4 py-2 text-center text-sm font-bold text-slate-400">Oxirgi</span>
+    <span class="rounded-xl bg-slate-100 px-3 py-2 text-center text-xs font-bold text-slate-400">Oxirgi</span>
     {% endif %}
   </div>
 </div>

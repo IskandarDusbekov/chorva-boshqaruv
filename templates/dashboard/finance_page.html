@@ -12,14 +12,14 @@
 {% endblock %}
 
 {% block content %}
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white rounded-2xl shadow p-4"><div class="text-sm text-gray-500">Jami kirim</div><div class="text-2xl font-black text-emerald-700 break-all">{{ overview.income_totals.UZS|floatformat:0|intcomma }} UZS</div><div class="text-sm font-bold text-emerald-600 break-all">{{ overview.income_totals.USD|floatformat:2|intcomma }} USD</div></div>
-  <div class="bg-white rounded-2xl shadow p-4"><div class="text-sm text-gray-500">Jami chiqim</div><div class="text-2xl font-black text-rose-700 break-all">{{ overview.expense_totals.UZS|floatformat:0|intcomma }} UZS</div><div class="text-sm font-bold text-rose-600 break-all">{{ overview.expense_totals.USD|floatformat:2|intcomma }} USD</div></div>
-  <div class="bg-white rounded-2xl shadow p-4"><div class="text-sm text-gray-500">Ichki balans</div><div class="text-2xl font-black text-indigo-700 break-all">{{ overview.internal_balance.UZS|floatformat:0|intcomma }} UZS</div><div class="text-sm font-bold text-indigo-600 break-all">{{ overview.internal_balance.USD|floatformat:2|intcomma }} USD</div></div>
-  <div class="bg-white rounded-2xl shadow p-4"><div class="text-sm text-gray-500">Tashqi balans</div><div class="text-2xl font-black text-amber-700 break-all">{{ overview.external_balance.UZS|floatformat:0|intcomma }} UZS</div><div class="text-sm font-bold text-amber-600 break-all">{{ overview.external_balance.USD|floatformat:2|intcomma }} USD</div></div>
+<div class="grid grid-cols-2 gap-3 mb-4 xl:grid-cols-4">
+  <div class="bg-white rounded-xl shadow-sm p-4"><div class="text-sm text-gray-500">Jami kirim</div><div class="text-xl font-black text-emerald-700 break-all">{{ overview.income_totals.UZS|floatformat:0|intcomma }} UZS</div><div class="text-sm font-bold text-emerald-600 break-all">{{ overview.income_totals.USD|floatformat:2|intcomma }} USD</div></div>
+  <div class="bg-white rounded-xl shadow-sm p-4"><div class="text-sm text-gray-500">Jami chiqim</div><div class="text-xl font-black text-rose-700 break-all">{{ overview.expense_totals.UZS|floatformat:0|intcomma }} UZS</div><div class="text-sm font-bold text-rose-600 break-all">{{ overview.expense_totals.USD|floatformat:2|intcomma }} USD</div></div>
+  <div class="bg-white rounded-xl shadow-sm p-4"><div class="text-sm text-gray-500">Ichki balans</div><div class="text-xl font-black text-indigo-700 break-all">{{ overview.internal_balance.UZS|floatformat:0|intcomma }} UZS</div><div class="text-sm font-bold text-indigo-600 break-all">{{ overview.internal_balance.USD|floatformat:2|intcomma }} USD</div></div>
+  <div class="bg-white rounded-xl shadow-sm p-4"><div class="text-sm text-gray-500">Tashqi balans</div><div class="text-xl font-black text-amber-700 break-all">{{ overview.external_balance.UZS|floatformat:0|intcomma }} UZS</div><div class="text-sm font-bold text-amber-600 break-all">{{ overview.external_balance.USD|floatformat:2|intcomma }} USD</div></div>
 </div>
 
-<div class="bg-white rounded-2xl shadow p-5 mb-6">
+<div class="bg-white rounded-xl shadow-sm p-4 mb-4">
   <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
     <h2 class="font-bold text-gray-800">Moliyaviy hisobot</h2>
     <div class="flex flex-wrap gap-2">
@@ -58,7 +58,7 @@
   <p class="mt-3 text-xs text-gray-500"><i class="fas fa-circle-info mr-1 text-indigo-500"></i>Yil va oy tanlansa hisobot aynan shu davr bo'yicha chiqadi; oy bo'sh qolsa yillik hisobot olinadi.</p>
 </div>
 
-<div class="bg-white rounded-2xl shadow p-5 mb-6">
+<div class="bg-white rounded-xl shadow-sm p-4 mb-4">
   <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
     <h2 class="font-bold text-gray-800">Kategoriya bo'yicha rangli jamlanma</h2>
     <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-600">{{ date_from }} - {{ date_to }}</span>
@@ -95,7 +95,7 @@
   </div>
 </div>
 
-<div class="bg-white rounded-2xl shadow p-5">
+<div class="bg-white rounded-xl shadow-sm p-4">
   <h2 class="font-bold text-gray-800 mb-4">Oxirgi kirim va chiqimlar</h2>
   <div class="mobile-table overflow-x-auto">
     <table class="w-full text-sm">
@@ -142,7 +142,7 @@
 </div>
 
 <div id="financeFormCard" class="{% if not edit_item %}hidden{% endif %} fixed inset-0 z-50 overflow-y-auto bg-slate-950/45 p-4">
-  <div class="mx-auto mt-8 max-w-3xl rounded-3xl bg-white p-5 shadow-2xl md:mt-12">
+  <div class="mx-auto mt-8 max-w-3xl rounded-[22px] bg-white p-4 shadow-2xl md:mt-12">
     <div class="mb-5 flex items-start justify-between gap-4">
       <div>
         <h2 class="text-xl font-black text-gray-800">{% if edit_item %}Moliyaviy yozuvni tahrirlash{% else %}Yangi moliyaviy yozuv{% endif %}</h2>
