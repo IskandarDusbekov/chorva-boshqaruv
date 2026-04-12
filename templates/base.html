@@ -1,3 +1,4 @@
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="uz">
 <head>
@@ -270,6 +271,15 @@
                     <div class="min-w-0">
                         <h1 class="page-title truncate font-black text-slate-900">{% block page_title %}Ferma paneli{% endblock %}</h1>
                         <p class="page-subtitle mt-0.5 max-w-md font-medium">{% block page_subtitle %}Ferma boshqaruvi{% endblock %}</p>
+                        {% if request.user.is_authenticated and header_farm_balance %}
+                        <div class="mt-2 inline-flex max-w-full items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50/90 px-3 py-1 text-[11px] font-semibold text-slate-600 shadow-sm">
+                            <i class="fas fa-wallet text-[10px] text-emerald-600"></i>
+                            <span class="text-slate-400">Asosiy balans</span>
+                            <span class="font-black text-emerald-700">{{ header_farm_balance.UZS|floatformat:0|intcomma }} UZS</span>
+                            <span class="hidden text-slate-300 sm:inline">|</span>
+                            <span class="hidden font-bold text-emerald-600 sm:inline">{{ header_farm_balance.USD|floatformat:2|intcomma }} USD</span>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
