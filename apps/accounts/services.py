@@ -116,6 +116,11 @@ def bind_telegram_session(*, user, telegram_id, chat_id, device_note=""):
 
 
 def generate_access_link(*, user, target_path="/panel/", created_by_bot=True):
+    AccessLink.objects.filter(
+        user=user,
+        is_used=False,
+        expires_at__gte=timezone.now(),
+    ).update(is_used=True)
     access_link = AccessLink.objects.create(
         user=user,
         token=AccessLink.build_token(),
@@ -136,7 +141,7 @@ def generate_access_link(*, user, target_path="/panel/", created_by_bot=True):
 def get_panel_target_path(user):
     if user.role in {UserRole.ADMIN, UserRole.MANAGER}:
         return "/panel/admin-dashboard/"
-    return "/panel/"
+    return "/panel/finance/"
 
 
 @transaction.atomic
@@ -146,7 +151,8 @@ def validate_access_link(*, token, mark_used=True, source_meta=None):
         raise PermissionDenied("Havola yaroqsiz yoki muddati tugagan.")
     if mark_used:
         access_link.is_used = True
-        access_link.save(update_fields=["is_used"])
+        access_link.ip_address = (source_meta or {}).get("ip_address") or access_link.ip_address
+        access_link.save(update_fields=["is_used", "ip_address"])
     create_audit_log(
         user=access_link.user,
         action="access_link_used",

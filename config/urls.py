@@ -6,6 +6,10 @@ from django.urls import include, path
 admin.site.site_header = "BotGate boshqaruv paneli"
 admin.site.site_title = "BotGate Admin"
 admin.site.index_title = "Tizim boshqaruvi"
+admin.site.site_url = "/panel/"
+admin.site.has_permission = lambda request: bool(
+    request.user.is_active and request.user.is_authenticated and request.user.is_superuser
+)
 
 
 urlpatterns = [

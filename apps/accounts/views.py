@@ -5,11 +5,13 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import redirect, render
+from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from .services import (
     custom_logout_service,
+    get_panel_target_path,
     login_with_access_link,
     validate_access_link,
     verify_telegram_webapp_init_data,
@@ -18,6 +20,7 @@ from .services import (
 logger = logging.getLogger(__name__)
 
 
+@never_cache
 def access_with_token(request, token=None):
     token = token or request.GET.get("token", "").strip()
     if not token:
@@ -51,6 +54,7 @@ def forbidden(request):
     return render(request, "accounts/forbidden.html", status=403)
 
 
+@never_cache
 def telegram_mini_app(request):
     return render(request, "accounts/telegram_mini_app.html")
 
@@ -72,4 +76,4 @@ def telegram_mini_app_verify(request):
             status=500,
         )
 
-    return JsonResponse({"ok": True, "redirect_url": "/panel/admin-dashboard/"})
+    return JsonResponse({"ok": True, "redirect_url": get_panel_target_path(user)})

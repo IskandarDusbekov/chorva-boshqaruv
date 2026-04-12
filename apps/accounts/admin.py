@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import AccessLink, AuditLog, TelegramSession, User
+from .models import AccessLink, AllowedContact, AuditLog, TelegramSession, User
 
 
 @admin.register(User)
@@ -53,6 +53,17 @@ class UserAdmin(BaseUserAdmin):
     def role_badge(self, obj):
         return obj.get_role_display()
 
+
+@admin.register(AllowedContact)
+class AllowedContactAdmin(admin.ModelAdmin):
+    list_display = ("full_name", "phone_number", "role", "is_active", "created_at")
+    list_filter = ("role", "is_active")
+    search_fields = ("full_name", "phone_number")
+    search_help_text = "Ism yoki telefon raqam bo'yicha qidiring."
+    list_per_page = 25
+    readonly_fields = ("created_at", "created_by")
+
+
 @admin.register(TelegramSession)
 class TelegramSessionAdmin(admin.ModelAdmin):
     list_display = ("user", "telegram_id", "chat_id", "is_verified", "last_seen_at")
@@ -61,6 +72,10 @@ class TelegramSessionAdmin(admin.ModelAdmin):
     search_help_text = "Username, Telegram ID yoki chat ID orqali qidiring."
     list_per_page = 25
     readonly_fields = ("first_verified_at", "last_seen_at")
+    list_select_related = ("user",)
+
+    def has_add_permission(self, request):
+        return False
 
 
 @admin.register(AccessLink)
@@ -70,7 +85,14 @@ class AccessLinkAdmin(admin.ModelAdmin):
     search_fields = ("user__username", "token", "target_path")
     search_help_text = "Foydalanuvchi, token yoki manzil bo'yicha qidiring."
     list_per_page = 25
-    readonly_fields = ("token", "created_at", "ip_address")
+    readonly_fields = ("user", "token", "target_path", "expires_at", "is_used", "created_by_bot", "created_at", "ip_address")
+    list_select_related = ("user",)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
 
 
 @admin.register(AuditLog)
@@ -81,3 +103,13 @@ class AuditLogAdmin(admin.ModelAdmin):
     search_help_text = "Action, obyekt turi yoki foydalanuvchi bo'yicha qidiring."
     list_per_page = 50
     readonly_fields = ("user", "action", "object_type", "object_id", "meta", "created_at")
+    list_select_related = ("user",)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser

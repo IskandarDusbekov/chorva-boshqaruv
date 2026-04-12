@@ -33,6 +33,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "apps.accounts.middleware.SecurityProbeBlockMiddleware",
     "apps.accounts.middleware.AccessLinkMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -95,6 +96,9 @@ AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "/auth/forbidden/"
 LOGIN_REDIRECT_URL = "/panel/"
 LOGOUT_REDIRECT_URL = "/auth/forbidden/"
+SESSION_COOKIE_AGE = 3600
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_SAVE_EVERY_REQUEST = True
 
 ACCESS_LINK_TTL_SECONDS = 180
 SESSION_IDLE_TIMEOUT_SECONDS = 3600
@@ -122,26 +126,85 @@ JAZZMIN_SETTINGS = {
     "site_logo_classes": "img-circle",
     "welcome_sign": "BotGate boshqaruv paneliga xush kelibsiz",
     "copyright": "BotGate Panel",
-    "search_model": ["accounts.User", "dashboard.DailyEntry", "dashboard.Report"],
+    "search_model": [
+        "accounts.User",
+        "accounts.AllowedContact",
+        "accounts.TelegramSession",
+        "dashboard.MilkRecord",
+        "dashboard.FinanceEntry",
+        "dashboard.Worker",
+        "dashboard.WorkerAdvance",
+    ],
     "topmenu_links": [
         {"name": "Asosiy sayt", "url": "/panel/", "new_window": False},
         {"model": "accounts.User"},
-        {"model": "dashboard.Report"},
+        {"model": "dashboard.FinanceEntry"},
+        {"model": "dashboard.Worker"},
     ],
-    "order_with_respect_to": ["accounts", "dashboard"],
+    "order_with_respect_to": [
+        "accounts",
+        "accounts.User",
+        "accounts.AllowedContact",
+        "accounts.TelegramSession",
+        "accounts.AccessLink",
+        "accounts.AuditLog",
+        "dashboard",
+        "dashboard.MilkRecord",
+        "dashboard.MilkPrice",
+        "dashboard.FinanceEntry",
+        "dashboard.FinanceCategory",
+        "dashboard.Worker",
+        "dashboard.WorkerAdvance",
+        "dashboard.WorkerJobType",
+    ],
     "icons": {
         "accounts": "fas fa-user-shield",
         "accounts.User": "fas fa-users",
+        "accounts.AllowedContact": "fas fa-address-card",
         "accounts.TelegramSession": "fab fa-telegram",
         "accounts.AccessLink": "fas fa-link",
         "accounts.AuditLog": "fas fa-clipboard-list",
         "dashboard": "fas fa-chart-column",
-        "dashboard.DailyEntry": "fas fa-pen-to-square",
-        "dashboard.Report": "fas fa-file-lines",
+        "dashboard.MilkRecord": "fas fa-glass-water-droplet",
+        "dashboard.MilkPrice": "fas fa-tags",
+        "dashboard.FinanceEntry": "fas fa-wallet",
+        "dashboard.FinanceCategory": "fas fa-layer-group",
+        "dashboard.Worker": "fas fa-users-gear",
+        "dashboard.WorkerAdvance": "fas fa-money-bill-transfer",
+        "dashboard.WorkerJobType": "fas fa-briefcase",
     },
     "navigation_expanded": True,
     "show_sidebar": True,
     "changeform_format": "horizontal_tabs",
+    "hide_apps": ["auth"],
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "theme": "flatly",
+    "dark_mode_theme": None,
+    "navbar_small_text": True,
+    "footer_small_text": True,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "accent": "accent-indigo",
+    "navbar": "navbar-white navbar-light",
+    "no_navbar_border": False,
+    "sidebar": "sidebar-light-primary",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": True,
+    "sidebar_nav_compact_style": True,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme_color": "primary",
+    "button_classes": {
+        "primary": "btn btn-primary",
+        "secondary": "btn btn-outline-secondary",
+        "info": "btn btn-info",
+        "warning": "btn btn-warning",
+        "danger": "btn btn-danger",
+        "success": "btn btn-success",
+    },
 }
 
 LOGGING = {

@@ -213,32 +213,40 @@
             </a>
 
             <nav class="mt-7 space-y-2">
+                {% if request.user.role != "user" %}
                 <a href="{% url 'dashboard:home' %}" class="sidebar-link flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-500 {% if nav_active == 'home' %}active{% endif %}">
                     <i class="fas fa-house w-5 text-base"></i><span>Bosh sahifa</span>
                 </a>
                 <a href="{% url 'dashboard:milk_page' %}" class="sidebar-link flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-500 {% if nav_active == 'milk' %}active{% endif %}">
                     <i class="fas fa-glass-water-droplet w-5 text-base"></i><span>Sut</span>
                 </a>
+                {% endif %}
                 <a href="{% url 'dashboard:finance_page' %}" class="sidebar-link flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-500 {% if nav_active == 'finance' %}active{% endif %}">
                     <i class="fas fa-wallet w-5 text-base"></i><span>Moliya</span>
                 </a>
+                {% if request.user.role != "user" %}
                 <a href="{% url 'dashboard:workers_page' %}" class="sidebar-link flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-500 {% if nav_active == 'workers' %}active{% endif %}">
                     <i class="fas fa-users w-5 text-base"></i><span>Xodimlar</span>
                 </a>
                 <a href="{% url 'dashboard:history_page' %}" class="sidebar-link flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-500 {% if nav_active == 'history' %}active{% endif %}">
                     <i class="fas fa-clock-rotate-left w-5 text-base"></i><span>Tarix</span>
                 </a>
+                {% endif %}
             </nav>
         </div>
     </aside>
 
     <div class="bottom-nav fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/80 lg:hidden">
-        <div class="grid grid-cols-5 gap-1 text-center">
+        <div class="grid {% if request.user.role == 'user' %}grid-cols-1{% else %}grid-cols-5{% endif %} gap-1 text-center">
+            {% if request.user.role != "user" %}
             <a href="{% url 'dashboard:home' %}" class="bottom-link text-slate-500 {% if nav_active == 'home' %}active{% endif %}"><i class="fas fa-house"></i>Bosh</a>
             <a href="{% url 'dashboard:milk_page' %}" class="bottom-link text-slate-500 {% if nav_active == 'milk' %}active{% endif %}"><i class="fas fa-glass-water-droplet"></i>Sut</a>
+            {% endif %}
             <a href="{% url 'dashboard:finance_page' %}" class="bottom-link text-slate-500 {% if nav_active == 'finance' %}active{% endif %}"><i class="fas fa-wallet"></i>Moliya</a>
+            {% if request.user.role != "user" %}
             <a href="{% url 'dashboard:workers_page' %}" class="bottom-link text-slate-500 {% if nav_active == 'workers' %}active{% endif %}"><i class="fas fa-users"></i>Xodimlar</a>
             <a href="{% url 'dashboard:history_page' %}" class="bottom-link text-slate-500 {% if nav_active == 'history' %}active{% endif %}"><i class="fas fa-clock-rotate-left"></i>Tarix</a>
+            {% endif %}
         </div>
     </div>
 

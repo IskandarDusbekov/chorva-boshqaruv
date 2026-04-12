@@ -34,16 +34,15 @@ def _today():
     return timezone.now().date()
 
 
-def reports_keyboard():
-    return ReplyKeyboardMarkup(
-        keyboard=[
-            [KeyboardButton(text="📅 Haftalik hisobot"), KeyboardButton(text="🗓️ Oylik hisobot")],
-            [KeyboardButton(text="⏮️ Kechagi hisobot"), KeyboardButton(text="👷 Ishchilar hisoboti")],
-            [KeyboardButton(text="🌐 Saytga o'tish")],
-            [KeyboardButton(text="🏠 Bosh menyu")],
-        ],
-        resize_keyboard=True,
-    )
+def reports_keyboard(role):
+    rows = [
+        [KeyboardButton(text="📅 Haftalik hisobot"), KeyboardButton(text="🗓️ Oylik hisobot")],
+        [KeyboardButton(text="⏮️ Kechagi hisobot")],
+    ]
+    if role in {"admin", "manager"}:
+        rows[1].append(KeyboardButton(text="👷 Ishchilar hisoboti"))
+    rows.append([KeyboardButton(text="🌐 Saytga o'tish"), KeyboardButton(text="🏠 Bosh menyu")])
+    return ReplyKeyboardMarkup(keyboard=rows, resize_keyboard=True)
 
 
 async def _safe_user(message: Message):
@@ -153,7 +152,11 @@ def _receive_pending_milk_to_internal(entry_id):
 
 @router.message(F.text == "📊 Hisobotlar")
 async def reports_menu(message: Message):
-    await message.answer("📊 Kerakli hisobot turini tanlang.", reply_markup=reports_keyboard())
+    user = await _safe_user(message)
+    if not user or user.role not in {"admin", "manager"}:
+        await message.answer("Bu bo'lim faqat admin va manager uchun.")
+        return
+    await message.answer("📊 Kerakli hisobot turini tanlang.", reply_markup=reports_keyboard(user.role))
 
 
 @router.message(F.text == "Default pulni olish")
@@ -161,6 +164,9 @@ async def pending_milk_menu(message: Message):
     user = await _safe_user(message)
     if not user or not user.is_telegram_verified:
         await message.answer("Avval bot orqali tasdiqlanib oling.")
+        return
+    if user.role not in {"admin", "manager"}:
+        await message.answer("Default sut puli bo'limi siz uchun yopiq.")
         return
 
     payments = await sync_to_async(_pending_milk_payments)()
@@ -225,9 +231,30 @@ async def receive_pending_milk_callback(callback: CallbackQuery):
 
 @router.message(F.text == "📝 Kiritish")
 async def entry_menu(message: Message, state: FSMContext):
+    user = await _safe_user(message)
+    if not user or not user.is_telegram_verified:
+        await message.answer("Avval tasdiqlanib oling.")
+        return
     await state.clear()
+    await state.update_data(role=user.role)
     await state.set_state(QuickEntryStates.waiting_for_entry_type)
-    await message.answer("📝 Tezkor kiritish turini tanlang.", reply_markup=entry_menu_keyboard())
+    await message.answer("📝 Tezkor kiritish turini tanlang.", reply_markup=entry_menu_keyboard(user.role))
+
+
+@router.message(F.text.in_({"🛡️ Mini App", "Mini App"}))
+async def open_mini_app_menu(message: Message):
+    user = await _safe_user(message)
+    if not user or not user.is_telegram_verified:
+        await message.answer("Avval tasdiqlanib oling.")
+        return
+    mini_keyboard = mini_app_inline_keyboard(user.role)
+    if not mini_keyboard:
+        await message.answer("Mini App faqat admin va manager uchun ochiq.")
+        return
+    await message.answer(
+        "Mini Appni xavfsiz inline tugma orqali oching.",
+        reply_markup=mini_keyboard,
+    )
 
 
 @router.message(F.text == "🏠 Bosh menyu")
@@ -241,12 +268,12 @@ async def go_back_handler(message: Message, state: FSMContext):
     if not current_state:
         await _return_main_menu(message, state)
         return
+    data = await state.get_data()
     if current_state in {QuickEntryStates.waiting_for_entry_type.state, QuickEntryStates.waiting_for_shift.state}:
         await state.set_state(QuickEntryStates.waiting_for_entry_type)
-        await message.answer("📝 Kiritish turini tanlang.", reply_markup=entry_menu_keyboard())
+        await message.answer("📝 Kiritish turini tanlang.", reply_markup=entry_menu_keyboard(data.get("role", "admin")))
         return
 
-    data = await state.get_data()
     entry_type = data.get("entry_type")
 
     if current_state == QuickEntryStates.waiting_for_record_date.state:
@@ -255,7 +282,7 @@ async def go_back_handler(message: Message, state: FSMContext):
             await message.answer("🕒 Qaysi paytdagi sut?", reply_markup=shift_keyboard())
         else:
             await state.set_state(QuickEntryStates.waiting_for_entry_type)
-            await message.answer("📝 Kiritish turini tanlang.", reply_markup=entry_menu_keyboard())
+            await message.answer("📝 Kiritish turini tanlang.", reply_markup=entry_menu_keyboard(data.get("role", "admin")))
         return
 
     if current_state == QuickEntryStates.waiting_for_liters.state:
@@ -265,7 +292,7 @@ async def go_back_handler(message: Message, state: FSMContext):
 
     if current_state == QuickEntryStates.waiting_for_finance_category.state:
         await state.set_state(QuickEntryStates.waiting_for_entry_type)
-        await message.answer("📝 Kiritish turini tanlang.", reply_markup=entry_menu_keyboard())
+        await message.answer("📝 Kiritish turini tanlang.", reply_markup=entry_menu_keyboard(data.get("role", "admin")))
         return
 
     if current_state == QuickEntryStates.waiting_for_finance_amount.state:
@@ -300,6 +327,11 @@ async def go_back_handler(message: Message, state: FSMContext):
 
 @router.message(QuickEntryStates.waiting_for_entry_type, F.text.in_({"🥛 Sut kiritish", "💰 Kirim kiritish", "💸 Chiqim kiritish"}))
 async def choose_entry_type(message: Message, state: FSMContext):
+    data = await state.get_data()
+    role = data.get("role", "admin")
+    if role == "user" and message.text == "🥛 Sut kiritish":
+        await message.answer("Oddiy foydalanuvchi sut bo'limiga kira olmaydi.", reply_markup=entry_menu_keyboard(role))
+        return
     if message.text == "🥛 Sut kiritish":
         await state.update_data(entry_type="milk")
         await state.set_state(QuickEntryStates.waiting_for_shift)
@@ -471,6 +503,10 @@ async def send_period_report(message: Message):
 
 @router.message(F.text == "👷 Ishchilar hisoboti")
 async def send_worker_report(message: Message):
+    user = await _safe_user(message)
+    if not user or user.role not in {"admin", "manager"}:
+        await message.answer("Ishchilar hisobotini faqat admin yoki manager oladi.")
+        return
     payroll = await sync_to_async(get_worker_payroll_summary)()
     if not payroll:
         await message.answer("👷 Ishchilar hali kiritilmagan.")
@@ -510,7 +546,9 @@ async def open_panel(message: Message):
 
 @router.message(QuickEntryStates.waiting_for_entry_type)
 async def invalid_entry_type(message: Message):
-    await message.answer("📝 Tugmalardan birini tanlang.", reply_markup=entry_menu_keyboard())
+    user = await _safe_user(message)
+    role = user.role if user else "admin"
+    await message.answer("📝 Tugmalardan birini tanlang.", reply_markup=entry_menu_keyboard(role))
 
 
 @router.message(QuickEntryStates.waiting_for_finance_currency)

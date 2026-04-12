@@ -2,6 +2,7 @@
 
 from calendar import monthrange
 from datetime import datetime, timedelta
+from functools import wraps
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -53,6 +54,22 @@ MONTH_CHOICES = [
     (11, "Noyabr"),
     (12, "Dekabr"),
 ]
+
+
+MANAGER_ROLES = {UserRole.ADMIN, UserRole.MANAGER}
+
+
+def manager_panel_required(view_func):
+    """Faqat admin va manager foydalanuvchilar uchun bo'limlarni cheklaydi."""
+
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if request.user.role not in MANAGER_ROLES:
+            messages.warning(request, "Bu bo'lim faqat admin yoki manager uchun ochiq.")
+            return redirect("dashboard:finance_page")
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
 
 
 def _today():
@@ -183,6 +200,9 @@ def _history_cards(logs_queryset):
 @login_required
 def home(request):
     """Asosiy dashboard: kartalar, grafiklar va loglarni chiqaradi."""
+    if request.user.role == UserRole.USER:
+        return redirect("dashboard:finance_page")
+
     today = _today()
     date_from = _parse_date(request.GET.get("date_from"), today - timedelta(days=6))
     date_to = _parse_date(request.GET.get("date_to"), today)
@@ -202,12 +222,14 @@ def home(request):
         "advance_form": WorkerAdvanceForm(initial={"advance_date": today, "month_reference": today.replace(day=1)}),
         "recent_logs_preview": recent_logs_preview,
         "role": request.user.role,
+        "show_full_dashboard": request.user.role in MANAGER_ROLES,
         "nav_active": "home",
     }
     return render(request, "dashboard/home.html", context)
 
 
 @login_required
+@manager_panel_required
 def milk_page(request):
     """Sut boshqaruvi sahifasi va unga tegishli modal ma'lumotlar."""
     today = _today()
@@ -234,6 +256,7 @@ def milk_page(request):
 
 
 @login_required
+@manager_panel_required
 def entry_list(request):
     today = _today()
     context = get_period_report(today - timedelta(days=30), today)
@@ -241,6 +264,7 @@ def entry_list(request):
 
 
 @login_required
+@manager_panel_required
 def entry_create(request):
     if request.method == "POST":
         form = MilkRecordForm(request.POST)
@@ -264,6 +288,7 @@ def entry_create(request):
 
 
 @login_required
+@manager_panel_required
 def milk_edit(request, pk):
     item = get_object_or_404(MilkRecord, pk=pk)
     if request.method == "POST":
@@ -303,6 +328,7 @@ def milk_edit(request, pk):
 
 
 @login_required
+@manager_panel_required
 def milk_delete(request, pk):
     item = get_object_or_404(MilkRecord, pk=pk)
     if request.method == "POST":
@@ -319,6 +345,7 @@ def milk_delete(request, pk):
 
 
 @login_required
+@manager_panel_required
 def milk_price_create(request):
     if request.method == "POST":
         form = MilkPriceForm(request.POST)
@@ -379,6 +406,7 @@ def finance_page(request):
     context["finance_query_suffix"] = _finance_query(date_from, date_to, year, month)
     confirmed_finance_qs = finance_qs.filter(status=FinanceStatusChoices.CONFIRMED)
     context["finance_category_rows"] = finance_totals_by_category(confirmed_finance_qs)
+    context["can_export_finance"] = request.user.role in MANAGER_ROLES
     return render(request, "dashboard/finance_page.html", context)
 
 
@@ -418,6 +446,7 @@ def finance_edit(request, pk):
     context["finance_query_suffix"] = _finance_query(date_from, date_to, year, month)
     confirmed_finance_qs = finance_qs.filter(status=FinanceStatusChoices.CONFIRMED)
     context["finance_category_rows"] = finance_totals_by_category(confirmed_finance_qs)
+    context["can_export_finance"] = request.user.role in MANAGER_ROLES
     return render(request, "dashboard/finance_page.html", context)
 
 
@@ -437,6 +466,7 @@ def finance_delete(request, pk):
 
 
 @login_required
+@manager_panel_required
 def worker_create(request):
     if request.method == "POST":
         form = WorkerForm(request.POST)
@@ -456,6 +486,7 @@ def worker_create(request):
 
 
 @login_required
+@manager_panel_required
 def workers_page(request):
     today = _today()
     date_from = _parse_date(request.GET.get("payment_date_from"), today - timedelta(days=30))
@@ -491,6 +522,7 @@ def workers_page(request):
 
 
 @login_required
+@manager_panel_required
 def worker_edit(request, pk):
     item = get_object_or_404(Worker, pk=pk)
     if request.method == "POST":
@@ -541,6 +573,7 @@ def worker_edit(request, pk):
 
 
 @login_required
+@manager_panel_required
 def worker_delete(request, pk):
     item = get_object_or_404(Worker, pk=pk)
     if request.method == "POST":
@@ -556,6 +589,7 @@ def worker_delete(request, pk):
 
 
 @login_required
+@manager_panel_required
 def worker_advance_create(request):
     if request.method == "POST":
         form = WorkerAdvanceForm(request.POST)
@@ -576,6 +610,7 @@ def worker_advance_create(request):
 
 
 @login_required
+@manager_panel_required
 def worker_payment_edit(request, pk):
     payment = get_object_or_404(WorkerAdvance, pk=pk)
     if request.method == "POST":
@@ -640,6 +675,7 @@ def worker_payment_edit(request, pk):
 
 
 @login_required
+@manager_panel_required
 def worker_payment_delete(request, pk):
     item = get_object_or_404(WorkerAdvance, pk=pk)
     if request.method == "POST":
@@ -656,6 +692,7 @@ def worker_payment_delete(request, pk):
 
 
 @login_required
+@manager_panel_required
 def workers_report_page(request):
     redirect_url = reverse("dashboard:workers_page")
     query_string = request.GET.urlencode()
@@ -665,6 +702,7 @@ def workers_report_page(request):
 
 
 @login_required
+@manager_panel_required
 def history_page(request):
     """Tarix sahifasi: audit log va tizim amallari jamlanmasi."""
     today = _today()
@@ -685,6 +723,7 @@ def history_page(request):
 
 
 @login_required
+@manager_panel_required
 def general_report_export(request):
     today = _today()
     date_from = _parse_date(request.GET.get("date_from"), today - timedelta(days=30))
@@ -710,6 +749,7 @@ def general_report_export(request):
 
 
 @login_required
+@manager_panel_required
 def milk_payment_receive(request, entry_id):
     if request.method == "POST":
         account_source = request.POST.get("account_source", AccountSourceChoices.INTERNAL)
@@ -728,6 +768,7 @@ def milk_payment_receive(request, entry_id):
 
 
 @login_required
+@manager_panel_required
 def report_list(request):
     today = _today()
     period = request.GET.get("period", "weekly")
@@ -747,9 +788,8 @@ def report_list(request):
 
 
 @login_required
+@manager_panel_required
 def admin_dashboard(request):
-    if request.user.role not in {UserRole.ADMIN, UserRole.MANAGER}:
-        return redirect("dashboard:home")
     today = _today()
     date_from = _parse_date(request.GET.get("date_from"), today - timedelta(days=30))
     date_to = _parse_date(request.GET.get("date_to"), today)
@@ -766,7 +806,9 @@ def admin_dashboard(request):
         "worker_form": WorkerForm(),
         "advance_form": WorkerAdvanceForm(initial={"advance_date": today, "month_reference": today.replace(day=1)}),
         "logs_page_obj": logs_page_obj,
+        "recent_logs_preview": list(_recent_logs()[:4]),
         "role": request.user.role,
+        "show_full_dashboard": True,
         "is_admin_dashboard": True,
         "nav_active": "home",
     }
