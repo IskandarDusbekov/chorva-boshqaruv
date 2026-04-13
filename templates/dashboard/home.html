@@ -173,7 +173,7 @@
       </div>
 
       <div class="theme-internal rounded-xl p-3 lg:p-4">
-        <div class="theme-label text-[11px] font-bold uppercase tracking-wide">Ichki net</div>
+        <div class="theme-label text-[11px] font-bold uppercase tracking-wide">Ichki hisob</div>
         <div class="theme-value mt-2 text-xl font-black lg:text-[1.9rem]">{{ stats.month_growth.internal_net.current|floatformat:0|intcomma }} UZS</div>
         <div class="mt-1 text-[11px] text-slate-500 lg:text-xs">Oldingi {{ stats.month_growth.internal_net.previous|floatformat:0|intcomma }}</div>
         <div class="mt-2 text-xs font-bold lg:text-sm {% if stats.month_growth.internal_net.is_positive %}text-emerald-600{% else %}text-rose-600{% endif %}">
