@@ -6,6 +6,8 @@ from . import views
 app_name = "accounts"
 
 urlpatterns = [
+    path("access/open/", views.access_link_entry, name="access_link_entry"),
+    path("access/exchange/", views.access_link_exchange, name="access_link_exchange"),
     path("access/", views.access_with_token, name="access_with_token_query"),
     path("access/<str:token>/", views.access_with_token, name="access_with_token"),
     path("telegram-mini-app/", views.telegram_mini_app, name="telegram_mini_app"),

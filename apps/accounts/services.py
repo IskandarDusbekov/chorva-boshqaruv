@@ -3,7 +3,7 @@ import hashlib
 import hmac
 import json
 import time
-from urllib.parse import parse_qsl
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
@@ -27,6 +27,93 @@ def _login_attempt_key(telegram_id):
 
 def _login_lock_key(telegram_id):
     return f"first-login-lock:{telegram_id}"
+
+
+def _rate_limit_key(scope, identifier):
+    digest = hashlib.sha256(identifier.encode("utf-8")).hexdigest()[:24]
+    return f"rate-limit:{scope}:{digest}"
+
+
+def _active_web_session_cache_key(user_id):
+    return f"active-web-session:{user_id}"
+
+
+def _sanitize_url(value):
+    if not value:
+        return ""
+
+    parts = urlsplit(value)
+    filtered_query = [
+        (key, item)
+        for key, item in parse_qsl(parts.query, keep_blank_values=True)
+        if key.lower() not in {"token", "hash", "initdata"}
+    ]
+    return urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(filtered_query), ""))
+
+
+def sanitize_request_meta(meta):
+    payload = dict(meta or {})
+    if "referer" in payload:
+        payload["referer"] = _sanitize_url(payload["referer"])
+    return payload
+
+
+def check_rate_limit(*, scope, identifier, limit, window_seconds):
+    if not identifier:
+        return 0
+
+    counter_key = _rate_limit_key(scope, identifier)
+    expires_key = f"{counter_key}:expires"
+    expires_at = cache.get(expires_key)
+    current = cache.get(counter_key, 0)
+
+    if current >= limit and expires_at:
+        remaining = int((expires_at - timezone.now()).total_seconds())
+        return max(1, remaining)
+
+    if cache.add(counter_key, 1, timeout=window_seconds):
+        cache.set(expires_key, timezone.now() + timedelta(seconds=window_seconds), timeout=window_seconds)
+        return 0
+
+    try:
+        current = cache.incr(counter_key)
+    except ValueError:
+        cache.set(counter_key, 1, timeout=window_seconds)
+        current = 1
+
+    if not expires_at:
+        cache.set(expires_key, timezone.now() + timedelta(seconds=window_seconds), timeout=window_seconds)
+
+    if current > limit:
+        expires_at = cache.get(expires_key) or (timezone.now() + timedelta(seconds=window_seconds))
+        remaining = int((expires_at - timezone.now()).total_seconds())
+        return max(1, remaining)
+    return 0
+
+
+def bind_current_web_session(request, user):
+    if not request.session.session_key:
+        request.session.save()
+    cache.set(
+        _active_web_session_cache_key(user.pk),
+        request.session.session_key,
+        timeout=settings.SESSION_COOKIE_AGE,
+    )
+
+
+def is_current_web_session_valid(request):
+    if not getattr(request.user, "is_authenticated", False):
+        return True
+
+    active_session_key = cache.get(_active_web_session_cache_key(request.user.pk))
+    if not active_session_key:
+        return True
+    return request.session.session_key == active_session_key
+
+
+def clear_user_sessions(user):
+    if user:
+        cache.delete(_active_web_session_cache_key(user.pk))
 
 
 def get_login_lock_remaining(telegram_id):
@@ -149,16 +236,17 @@ def validate_access_link(*, token, mark_used=True, source_meta=None):
     access_link = get_valid_access_link(token=token)
     if not access_link:
         raise PermissionDenied("Havola yaroqsiz yoki muddati tugagan.")
+    clean_meta = sanitize_request_meta(source_meta)
     if mark_used:
         access_link.is_used = True
-        access_link.ip_address = (source_meta or {}).get("ip_address") or access_link.ip_address
+        access_link.ip_address = clean_meta.get("ip_address") or access_link.ip_address
         access_link.save(update_fields=["is_used", "ip_address"])
     create_audit_log(
         user=access_link.user,
         action="access_link_used",
         object_type="AccessLink",
         object_id=str(access_link.pk),
-        meta={"target_path": access_link.target_path, **(source_meta or {})},
+        meta={"target_path": access_link.target_path, **clean_meta},
     )
     return access_link
 
@@ -175,6 +263,8 @@ def create_audit_log(*, action, user=None, object_type="", object_id="", meta=No
 
 def login_with_access_link(request, user):
     login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+    request.session.cycle_key()
+    bind_current_web_session(request, user)
     create_audit_log(user=user, action="web_login_via_access_link", object_type="User", object_id=str(user.pk))
 
 
@@ -182,6 +272,7 @@ def custom_logout_service(request):
     user = request.user if isinstance(request.user, User) and request.user.is_authenticated else None
     if user:
         create_audit_log(user=user, action="web_logout", object_type="User", object_id=str(user.pk))
+        clear_user_sessions(user)
     logout(request)
 
 

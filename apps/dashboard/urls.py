@@ -7,7 +7,7 @@ from . import views
 app_name = "dashboard"
 
 urlpatterns = [
-    path("open/", account_views.access_with_token, name="panel_access_open"),
+    path("open/", account_views.access_link_entry, name="panel_access_open"),
     path("", views.home, name="home"),
     path("history/", views.history_page, name="history_page"),
     path("milk/", views.milk_page, name="milk_page"),

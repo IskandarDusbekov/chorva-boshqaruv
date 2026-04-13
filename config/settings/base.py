@@ -33,6 +33,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "apps.accounts.middleware.SessionGuardMiddleware",
     "apps.accounts.middleware.SecurityProbeBlockMiddleware",
     "apps.accounts.middleware.AccessLinkMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -105,6 +106,10 @@ ACCESS_LINK_TTL_SECONDS = 180
 SESSION_IDLE_TIMEOUT_SECONDS = 3600
 FIRST_LOGIN_MAX_ATTEMPTS = 3
 FIRST_LOGIN_LOCK_MINUTES = 10
+TOKEN_EXCHANGE_RATE_LIMIT = 12
+TOKEN_ACCESS_RATE_LIMIT = 10
+MINI_APP_VERIFY_RATE_LIMIT = 15
+AUTH_RATE_LIMIT_WINDOW_SECONDS = 300
 SITE_BASE_URL = os.getenv("SITE_BASE_URL", "http://127.0.0.1:8000")
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 ADMIN_URL = os.getenv("ADMIN_URL", "botgate-admin/").strip("/") + "/"

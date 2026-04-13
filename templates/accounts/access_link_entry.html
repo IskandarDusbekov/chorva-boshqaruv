@@ -3,21 +3,20 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini App tekshirilmoqda</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Havola tekshirilmoqda</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="min-h-screen bg-slate-950 text-white">
     <div class="mx-auto flex min-h-screen max-w-lg items-center px-6">
         <div class="w-full rounded-3xl border border-white/10 bg-white/5 p-8 text-center shadow-2xl backdrop-blur">
-            <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-indigo-500/20 text-indigo-300">
+            <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-sky-500/20 text-sky-300">
                 <svg class="h-8 w-8 animate-spin" viewBox="0 0 24 24" fill="none">
                     <circle cx="12" cy="12" r="10" class="opacity-20" stroke="currentColor" stroke-width="4"></circle>
                     <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
                 </svg>
             </div>
-            <h1 class="text-2xl font-black">Mini App tekshirilmoqda</h1>
-            <p class="mt-3 text-sm leading-6 text-slate-300">Telegram sessiyangiz tekshirilmoqda. Faqat admin va manager foydalanuvchilar ichkariga kiradi.</p>
+            <h1 class="text-2xl font-black">Havola tekshirilmoqda</h1>
+            <p class="mt-3 text-sm leading-6 text-slate-300">Xavfsiz kirish uchun token tekshiriladi va darhol toza sahifaga yo'naltiriladi.</p>
             <p id="statusText" class="mt-6 text-sm text-slate-400">Kuting...</p>
         </div>
     </div>
@@ -25,32 +24,36 @@
     <script>
         const statusText = document.getElementById("statusText");
 
-        async function verifyMiniApp() {
+        function getTokenFromLocation() {
+            const hashToken = new URLSearchParams(window.location.hash.replace(/^#/, "")).get("token");
+            const queryToken = new URLSearchParams(window.location.search).get("token");
+            return (hashToken || queryToken || "").trim();
+        }
+
+        async function exchangeToken() {
+            const token = getTokenFromLocation();
+            if (!token) {
+                statusText.textContent = "Token topilmadi yoki eskirgan.";
+                return;
+            }
+
+            if (window.location.search || window.location.hash) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
+            statusText.textContent = "Tekshirilmoqda...";
+
             try {
-                if (!window.Telegram || !window.Telegram.WebApp) {
-                    throw new Error("Telegram WebApp topilmadi.");
-                }
-
-                const tg = window.Telegram.WebApp;
-                tg.ready();
-
-                const initData = tg.initData || "";
-                if (!initData) {
-                    throw new Error("initData bo'sh keldi.");
-                }
-
-                statusText.textContent = "Tekshirilmoqda...";
-
-                const response = await fetch("{% url 'accounts:telegram_mini_app_verify' %}", {
+                const response = await fetch("{% url 'accounts:access_link_exchange' %}", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ initData }),
                     credentials: "same-origin",
+                    body: JSON.stringify({ token }),
                 });
 
                 const payload = await response.json();
                 if (!response.ok || !payload.ok) {
-                    throw new Error(payload.error || "Tekshiruvdan o'tmadi.");
+                    throw new Error(payload.error || "Havola tekshiruvdan o'tmadi.");
                 }
 
                 statusText.textContent = "Muvaffaqiyatli. Yo'naltirilmoqda...";
@@ -60,7 +63,7 @@
             }
         }
 
-        verifyMiniApp();
+        exchangeToken();
     </script>
 </body>
 </html>

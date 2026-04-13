@@ -1,5 +1,9 @@
+from django.contrib.auth import logout
 from django.http import HttpResponseForbidden, HttpResponseNotFound
+from django.shortcuts import redirect
 from django.urls import Resolver404, resolve
+
+from .services import is_current_web_session_valid
 
 
 class SecurityProbeBlockMiddleware:
@@ -48,4 +52,17 @@ class AccessLinkMiddleware:
         if match.url_name == "access_with_token" and not match.kwargs.get("token"):
             return HttpResponseForbidden("Access token required.")
 
+        return self.get_response(request)
+
+
+class SessionGuardMiddleware:
+    """Bitta foydalanuvchi uchun faqat oxirgi web sessionni aktiv qoldiradi."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.user.is_authenticated and not is_current_web_session_valid(request):
+            logout(request)
+            return redirect("/auth/forbidden/")
         return self.get_response(request)
