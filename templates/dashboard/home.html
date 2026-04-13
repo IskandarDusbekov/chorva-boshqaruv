@@ -7,80 +7,80 @@
 
 
 {% block content %}
-<section class="grid grid-cols-2 gap-3 xl:grid-cols-4">
-  <article class="stats-card p-4">
+<section class="grid grid-cols-2 gap-3 lg:gap-5 xl:grid-cols-4">
+  <article class="stats-card p-4 lg:p-6">
     <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Bugungi sut</div>
-    <div class="mt-2 text-2xl font-black tracking-tight text-indigo-700">{{ stats.today_liters|floatformat:0|intcomma }} L</div>
-    <div class="mt-2 inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold {% if stats.growth_percent >= 0 %}bg-emerald-50 text-emerald-600{% else %}bg-rose-50 text-rose-600{% endif %}">
+    <div class="mt-2 text-2xl font-black tracking-tight text-indigo-700 lg:text-[2.6rem]">{{ stats.today_liters|floatformat:0|intcomma }} L</div>
+    <div class="mt-3 inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold lg:px-3 lg:py-1.5 lg:text-xs {% if stats.growth_percent >= 0 %}bg-emerald-50 text-emerald-600{% else %}bg-rose-50 text-rose-600{% endif %}">
       {% if stats.growth_percent >= 0 %}<i class="fas fa-arrow-trend-up mr-1"></i>{% else %}<i class="fas fa-arrow-trend-down mr-1"></i>{% endif %}
       {{ stats.growth_percent|floatformat:1 }}%
     </div>
   </article>
 
-  <article class="stats-card p-4">
+  <article class="stats-card p-4 lg:p-6">
     <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Oxirgi 7 kun</div>
-    <div class="mt-2 text-2xl font-black tracking-tight text-slate-900">{{ stats.total_liters|floatformat:0|intcomma }} L</div>
-    <div class="mt-2 text-[11px] font-medium text-slate-400">Max {{ stats.max_daily|floatformat:0|intcomma }} L</div>
+    <div class="mt-2 text-2xl font-black tracking-tight text-slate-900 lg:text-[2.4rem]">{{ stats.total_liters|floatformat:0|intcomma }} L</div>
+    <div class="mt-3 text-[11px] font-medium text-slate-400 lg:text-sm">Max {{ stats.max_daily|floatformat:0|intcomma }} L</div>
   </article>
 
-  <article class="stats-card p-4">
+  <article class="stats-card p-4 lg:p-6">
     <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Daromad</div>
-    <div class="mt-2 text-2xl font-black tracking-tight text-emerald-700">{{ stats.income_totals.UZS|floatformat:0|intcomma }}</div>
-    <div class="mt-2 text-[11px] font-medium text-emerald-500">UZS</div>
+    <div class="mt-2 text-2xl font-black tracking-tight text-emerald-700 lg:text-[2.4rem]">{{ stats.income_totals.UZS|floatformat:0|intcomma }}</div>
+    <div class="mt-3 text-[11px] font-medium text-emerald-500 lg:text-sm">UZS</div>
   </article>
 
-  <article class="stats-card p-4">
+  <article class="stats-card p-4 lg:p-6">
     <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Xarajat</div>
-    <div class="mt-2 text-2xl font-black tracking-tight text-rose-700">{{ stats.expense_totals.UZS|floatformat:0|intcomma }}</div>
-    <div class="mt-2 text-[11px] font-medium text-rose-500">UZS</div>
+    <div class="mt-2 text-2xl font-black tracking-tight text-rose-700 lg:text-[2.4rem]">{{ stats.expense_totals.UZS|floatformat:0|intcomma }}</div>
+    <div class="mt-3 text-[11px] font-medium text-rose-500 lg:text-sm">UZS</div>
   </article>
 </section>
 
-<section class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[1.35fr_minmax(0,1fr)]">
-  <article class="surface-card p-4">
+<section class="mt-5 grid grid-cols-1 gap-4 lg:gap-5 xl:grid-cols-[1.45fr_minmax(0,1fr)]">
+  <article class="surface-card p-4 lg:p-6">
     <div class="flex items-start justify-between gap-3">
       <div>
-        <h2 class="text-base font-black text-slate-900">Haftalik progress</h2>
-        <p class="mt-1 text-xs font-medium text-slate-500">Bugungi ko'rsatkich eng yuqori kun bilan solishtiriladi</p>
+        <h2 class="text-base font-black text-slate-900 lg:text-[1.35rem]">Haftalik progress</h2>
+        <p class="mt-1 text-xs font-medium text-slate-500 lg:text-sm">Bugungi ko'rsatkich eng yuqori kun bilan solishtiriladi</p>
       </div>
-      <span class="rounded-full bg-indigo-50 px-3 py-1.5 text-[11px] font-black text-indigo-700">{{ stats.progress_percent }}%</span>
+      <span class="rounded-full bg-indigo-50 px-3 py-1.5 text-[11px] font-black text-indigo-700 lg:px-4 lg:py-2 lg:text-sm">{{ stats.progress_percent }}%</span>
     </div>
 
-    <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_auto]">
+    <div class="mt-4 grid grid-cols-1 gap-4 lg:mt-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(21rem,0.95fr)] lg:gap-6">
       <div>
-        <div class="text-3xl font-black tracking-tight text-slate-900">{{ stats.today_liters|floatformat:0|intcomma }} L</div>
-        <p class="mt-1 text-sm font-medium text-slate-500">Bugun kiritilgan sut hajmi</p>
-        <div class="mt-4 h-3 overflow-hidden rounded-full bg-slate-100">
+        <div class="text-3xl font-black tracking-tight text-slate-900 lg:text-[3.35rem]">{{ stats.today_liters|floatformat:0|intcomma }} L</div>
+        <p class="mt-1 text-sm font-medium text-slate-500 lg:text-base">Bugun kiritilgan sut hajmi</p>
+        <div class="mt-4 h-3 overflow-hidden rounded-full bg-slate-100 lg:mt-5 lg:h-4">
           <div class="h-full rounded-full bg-gradient-to-r from-indigo-600 via-blue-500 to-sky-400" style="width: {{ stats.progress_percent }}%"></div>
         </div>
-        <div class="mt-2 flex items-center justify-between text-[11px] font-semibold text-slate-400">
+        <div class="mt-2 flex items-center justify-between text-[11px] font-semibold text-slate-400 lg:text-xs">
           <span>0%</span>
           <span>Eng yuqori kun: {{ stats.max_daily|floatformat:0|intcomma }} L</span>
         </div>
-        <div class="mt-4 grid grid-cols-3 gap-2">
-          <div class="rounded-xl bg-slate-50 p-3">
+        <div class="mt-4 grid grid-cols-3 gap-2 lg:mt-5 lg:gap-3">
+          <div class="rounded-xl bg-slate-50 p-3 lg:p-4">
             <div class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Eng yuqori</div>
-            <div class="mt-1 text-sm font-black text-slate-900">{{ stats.max_daily|floatformat:0|intcomma }} L</div>
+            <div class="mt-1 text-sm font-black text-slate-900 lg:text-xl">{{ stats.max_daily|floatformat:0|intcomma }} L</div>
           </div>
-          <div class="rounded-xl bg-slate-50 p-3">
+          <div class="rounded-xl bg-slate-50 p-3 lg:p-4">
             <div class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Eng past</div>
-            <div class="mt-1 text-sm font-black text-slate-900">{{ stats.min_daily|floatformat:0|intcomma }} L</div>
+            <div class="mt-1 text-sm font-black text-slate-900 lg:text-xl">{{ stats.min_daily|floatformat:0|intcomma }} L</div>
           </div>
-          <div class="rounded-xl bg-slate-50 p-3">
+          <div class="rounded-xl bg-slate-50 p-3 lg:p-4">
             <div class="text-[11px] font-bold uppercase tracking-wide text-slate-400">7 kun jami</div>
-            <div class="mt-1 text-sm font-black text-slate-900">{{ stats.total_liters|floatformat:0|intcomma }} L</div>
+            <div class="mt-1 text-sm font-black text-slate-900 lg:text-xl">{{ stats.total_liters|floatformat:0|intcomma }} L</div>
           </div>
         </div>
       </div>
 
-      <div class="flex items-end justify-between gap-2 md:min-w-[15rem]">
+      <div class="flex items-end justify-between gap-2 lg:min-w-[21rem] lg:gap-3">
         {% for point in stats.weekly_chart %}
-        <div class="flex min-w-[2rem] flex-1 flex-col items-center gap-2">
-          <div class="flex h-28 w-full items-end rounded-2xl bg-slate-100 p-1.5">
+        <div class="flex min-w-[2rem] flex-1 flex-col items-center gap-2 lg:min-w-[2.6rem] lg:gap-2.5">
+          <div class="flex h-28 w-full items-end rounded-2xl bg-slate-100 p-1.5 lg:h-40 lg:rounded-[1.35rem] lg:p-2">
             <div class="w-full rounded-xl bg-gradient-to-t from-indigo-600 to-sky-400" style="height: {% if point.percent < 14 %}14{% else %}{{ point.percent }}{% endif %}%"></div>
           </div>
-          <div class="text-[10px] font-semibold text-slate-400">{{ point.date }}</div>
-          <div class="text-[10px] font-black text-slate-700">{{ point.liters|floatformat:0 }}</div>
+          <div class="text-[10px] font-semibold text-slate-400 lg:text-[11px]">{{ point.date }}</div>
+          <div class="text-[10px] font-black text-slate-700 lg:text-[1rem]">{{ point.liters|floatformat:0 }}</div>
         </div>
         {% empty %}
         <div class="flex h-28 w-full items-center justify-center rounded-2xl bg-slate-50 text-sm text-slate-400">Haftalik progress hali yo'q</div>
@@ -89,94 +89,94 @@
     </div>
   </article>
 
-  <article class="surface-card p-4">
+  <article class="surface-card p-4 lg:p-6">
     <div class="flex items-start justify-between gap-3">
       <div>
-        <h2 class="text-base font-black text-slate-900">Ferma ko'rsatkichlari</h2>
-        <p class="mt-1 text-xs font-medium text-slate-500">Balans, narx va kutilayotgan tushumlar</p>
+        <h2 class="text-base font-black text-slate-900 lg:text-[1.35rem]">Ferma ko'rsatkichlari</h2>
+        <p class="mt-1 text-xs font-medium text-slate-500 lg:text-sm">Balans, narx va kutilayotgan tushumlar</p>
       </div>
       <a href="{% url 'dashboard:finance_page' %}" class="rounded-xl bg-slate-100 px-3 py-2 text-xs font-bold text-slate-600">Moliya</a>
     </div>
 
-    <div class="mt-4 space-y-3">
-      <div class="rounded-xl bg-violet-50 p-3">
-        <div class="text-[11px] font-bold uppercase tracking-wide text-violet-500">Aktiv sut narxi</div>
+    <div class="mt-4 space-y-3 lg:mt-5 lg:space-y-4">
+      <div class="theme-price rounded-xl p-3 lg:p-4">
+        <div class="theme-label text-[11px] font-bold uppercase tracking-wide">Aktiv sut narxi</div>
         {% if stats.active_milk_price %}
-        <div class="mt-2 text-xl font-black text-violet-700">{{ stats.active_milk_price.price_per_liter|floatformat:0|intcomma }} {{ stats.active_milk_price.currency }}</div>
-        <div class="mt-1 text-[11px] text-slate-500">{{ stats.active_milk_price.effective_from }}</div>
+        <div class="theme-value mt-2 text-xl font-black lg:text-[2rem]">{{ stats.active_milk_price.price_per_liter|floatformat:0|intcomma }} {{ stats.active_milk_price.currency }}</div>
+        <div class="mt-1 text-[11px] text-slate-500 lg:text-xs">{{ stats.active_milk_price.effective_from }}</div>
         {% else %}
         <div class="mt-2 text-sm font-semibold text-slate-400">Narx hali kiritilmagan</div>
         {% endif %}
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
-        <div class="rounded-xl bg-emerald-50 p-3">
-          <div class="text-[11px] font-bold uppercase tracking-wide text-emerald-500">Ichki hisob</div>
-          <div class="mt-2 text-lg font-black text-emerald-700">{{ stats.internal_balance.UZS|floatformat:0|intcomma }} UZS</div>
-          <div class="mt-1 text-[11px] font-bold text-emerald-500">{{ stats.internal_balance.USD|floatformat:2|intcomma }} USD</div>
+      <div class="grid grid-cols-2 gap-3 lg:gap-4">
+        <div class="theme-internal rounded-xl p-3 lg:p-4">
+          <div class="theme-label text-[11px] font-bold uppercase tracking-wide">Ichki hisob</div>
+          <div class="theme-value mt-2 text-lg font-black lg:text-[2rem]">{{ stats.internal_balance.UZS|floatformat:0|intcomma }} UZS</div>
+          <div class="theme-subvalue mt-1 text-[11px] font-bold lg:text-xs">{{ stats.internal_balance.USD|floatformat:2|intcomma }} USD</div>
         </div>
-        <div class="rounded-xl bg-amber-50 p-3">
-          <div class="text-[11px] font-bold uppercase tracking-wide text-amber-500">Tashqi hisob</div>
-          <div class="mt-2 text-lg font-black text-amber-700">{{ stats.external_balance.UZS|floatformat:0|intcomma }} UZS</div>
-          <div class="mt-1 text-[11px] font-bold text-amber-500">{{ stats.external_balance.USD|floatformat:2|intcomma }} USD</div>
+        <div class="theme-external rounded-xl p-3 lg:p-4">
+          <div class="theme-label text-[11px] font-bold uppercase tracking-wide">Tashqi hisob</div>
+          <div class="theme-value mt-2 text-lg font-black lg:text-[2rem]">{{ stats.external_balance.UZS|floatformat:0|intcomma }} UZS</div>
+          <div class="theme-subvalue mt-1 text-[11px] font-bold lg:text-xs">{{ stats.external_balance.USD|floatformat:2|intcomma }} USD</div>
         </div>
       </div>
 
-      <div class="rounded-xl bg-sky-50 p-3">
-        <div class="text-[11px] font-bold uppercase tracking-wide text-sky-500">Kutilayotgan sut puli</div>
-        <div class="mt-2 text-xl font-black text-sky-700">{{ stats.pending_milk_totals.UZS|floatformat:0|intcomma }} UZS</div>
-        <div class="mt-1 text-[11px] font-bold text-sky-500">{{ stats.pending_milk_totals.USD|floatformat:2|intcomma }} USD</div>
+      <div class="theme-pending rounded-xl p-3 lg:p-4">
+        <div class="theme-label text-[11px] font-bold uppercase tracking-wide">Kutilayotgan sut puli</div>
+        <div class="theme-value mt-2 text-xl font-black lg:text-[2rem]">{{ stats.pending_milk_totals.UZS|floatformat:0|intcomma }} UZS</div>
+        <div class="theme-subvalue mt-1 text-[11px] font-bold lg:text-xs">{{ stats.pending_milk_totals.USD|floatformat:2|intcomma }} USD</div>
       </div>
     </div>
   </article>
 </section>
 
-<section class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[1.25fr_minmax(0,1fr)]">
-  <article class="surface-card p-4">
+<section class="mt-5 grid grid-cols-1 gap-4 lg:gap-5 xl:grid-cols-[1.25fr_minmax(0,1fr)]">
+  <article class="surface-card p-4 lg:p-6">
     <div class="flex items-start justify-between gap-3">
       <div>
-        <h2 class="text-base font-black text-slate-900">Oylik o'sish tahlili</h2>
-        <p class="mt-1 text-xs font-medium text-slate-500">{{ stats.month_growth.current_label }} va {{ stats.month_growth.previous_label }}</p>
+        <h2 class="text-base font-black text-slate-900 lg:text-[1.3rem]">Oylik o'sish tahlili</h2>
+        <p class="mt-1 text-xs font-medium text-slate-500 lg:text-sm">{{ stats.month_growth.current_label }} va {{ stats.month_growth.previous_label }}</p>
       </div>
-      <span class="rounded-full bg-indigo-50 px-3 py-1.5 text-[11px] font-bold text-indigo-700">Taqqoslash</span>
+      <span class="rounded-full bg-indigo-50 px-3 py-1.5 text-[11px] font-bold text-indigo-700 lg:px-4 lg:py-2 lg:text-xs">Taqqoslash</span>
     </div>
 
-    <div class="mt-4 grid grid-cols-2 gap-3">
-      <div class="rounded-xl bg-indigo-50 p-3">
+    <div class="mt-4 grid grid-cols-2 gap-3 lg:mt-5 lg:gap-4">
+      <div class="rounded-xl bg-indigo-50 p-3 lg:p-4">
         <div class="text-[11px] font-bold uppercase tracking-wide text-indigo-500">Sut hajmi</div>
-        <div class="mt-2 text-xl font-black text-indigo-700">{{ stats.month_growth.milk.current|floatformat:0|intcomma }} {{ stats.month_growth.milk.suffix }}</div>
-        <div class="mt-1 text-[11px] text-slate-500">Oldingi {{ stats.month_growth.milk.previous|floatformat:0|intcomma }}</div>
-        <div class="mt-2 text-xs font-bold {% if stats.month_growth.milk.is_positive %}text-emerald-600{% else %}text-rose-600{% endif %}">
+        <div class="mt-2 text-xl font-black text-indigo-700 lg:text-[1.9rem]">{{ stats.month_growth.milk.current|floatformat:0|intcomma }} {{ stats.month_growth.milk.suffix }}</div>
+        <div class="mt-1 text-[11px] text-slate-500 lg:text-xs">Oldingi {{ stats.month_growth.milk.previous|floatformat:0|intcomma }}</div>
+        <div class="mt-2 text-xs font-bold lg:text-sm {% if stats.month_growth.milk.is_positive %}text-emerald-600{% else %}text-rose-600{% endif %}">
           {% if stats.month_growth.milk.is_positive %}<i class="fas fa-arrow-trend-up mr-1"></i>{% else %}<i class="fas fa-arrow-trend-down mr-1"></i>{% endif %}
           {{ stats.month_growth.milk.percent|floatformat:1 }}%
         </div>
       </div>
 
-      <div class="rounded-xl bg-emerald-50 p-3">
+      <div class="rounded-xl bg-emerald-50 p-3 lg:p-4">
         <div class="text-[11px] font-bold uppercase tracking-wide text-emerald-500">Kirim</div>
-        <div class="mt-2 text-xl font-black text-emerald-700">{{ stats.month_growth.income.current|floatformat:0|intcomma }} UZS</div>
-        <div class="mt-1 text-[11px] text-slate-500">Oldingi {{ stats.month_growth.income.previous|floatformat:0|intcomma }}</div>
-        <div class="mt-2 text-xs font-bold {% if stats.month_growth.income.is_positive %}text-emerald-600{% else %}text-rose-600{% endif %}">
+        <div class="mt-2 text-xl font-black text-emerald-700 lg:text-[1.9rem]">{{ stats.month_growth.income.current|floatformat:0|intcomma }} UZS</div>
+        <div class="mt-1 text-[11px] text-slate-500 lg:text-xs">Oldingi {{ stats.month_growth.income.previous|floatformat:0|intcomma }}</div>
+        <div class="mt-2 text-xs font-bold lg:text-sm {% if stats.month_growth.income.is_positive %}text-emerald-600{% else %}text-rose-600{% endif %}">
           {% if stats.month_growth.income.is_positive %}<i class="fas fa-arrow-trend-up mr-1"></i>{% else %}<i class="fas fa-arrow-trend-down mr-1"></i>{% endif %}
           {{ stats.month_growth.income.percent|floatformat:1 }}%
         </div>
       </div>
 
-      <div class="rounded-xl bg-rose-50 p-3">
+      <div class="rounded-xl bg-rose-50 p-3 lg:p-4">
         <div class="text-[11px] font-bold uppercase tracking-wide text-rose-500">Xarajat</div>
-        <div class="mt-2 text-xl font-black text-rose-700">{{ stats.month_growth.expense.current|floatformat:0|intcomma }} UZS</div>
-        <div class="mt-1 text-[11px] text-slate-500">Oldingi {{ stats.month_growth.expense.previous|floatformat:0|intcomma }}</div>
-        <div class="mt-2 text-xs font-bold {% if stats.month_growth.expense.is_positive %}text-rose-600{% else %}text-emerald-600{% endif %}">
+        <div class="mt-2 text-xl font-black text-rose-700 lg:text-[1.9rem]">{{ stats.month_growth.expense.current|floatformat:0|intcomma }} UZS</div>
+        <div class="mt-1 text-[11px] text-slate-500 lg:text-xs">Oldingi {{ stats.month_growth.expense.previous|floatformat:0|intcomma }}</div>
+        <div class="mt-2 text-xs font-bold lg:text-sm {% if stats.month_growth.expense.is_positive %}text-rose-600{% else %}text-emerald-600{% endif %}">
           {% if stats.month_growth.expense.is_positive %}<i class="fas fa-arrow-trend-up mr-1"></i>{% else %}<i class="fas fa-arrow-trend-down mr-1"></i>{% endif %}
           {{ stats.month_growth.expense.percent|floatformat:1 }}%
         </div>
       </div>
 
-      <div class="rounded-xl bg-sky-50 p-3">
-        <div class="text-[11px] font-bold uppercase tracking-wide text-sky-500">Ichki net</div>
-        <div class="mt-2 text-xl font-black text-sky-700">{{ stats.month_growth.internal_net.current|floatformat:0|intcomma }} UZS</div>
-        <div class="mt-1 text-[11px] text-slate-500">Oldingi {{ stats.month_growth.internal_net.previous|floatformat:0|intcomma }}</div>
-        <div class="mt-2 text-xs font-bold {% if stats.month_growth.internal_net.is_positive %}text-emerald-600{% else %}text-rose-600{% endif %}">
+      <div class="theme-internal rounded-xl p-3 lg:p-4">
+        <div class="theme-label text-[11px] font-bold uppercase tracking-wide">Ichki net</div>
+        <div class="theme-value mt-2 text-xl font-black lg:text-[1.9rem]">{{ stats.month_growth.internal_net.current|floatformat:0|intcomma }} UZS</div>
+        <div class="mt-1 text-[11px] text-slate-500 lg:text-xs">Oldingi {{ stats.month_growth.internal_net.previous|floatformat:0|intcomma }}</div>
+        <div class="mt-2 text-xs font-bold lg:text-sm {% if stats.month_growth.internal_net.is_positive %}text-emerald-600{% else %}text-rose-600{% endif %}">
           {% if stats.month_growth.internal_net.is_positive %}<i class="fas fa-arrow-trend-up mr-1"></i>{% else %}<i class="fas fa-arrow-trend-down mr-1"></i>{% endif %}
           {{ stats.month_growth.internal_net.percent|floatformat:1 }}%
         </div>
@@ -184,7 +184,7 @@
     </div>
   </article>
 
-  <article class="surface-card p-4">
+  <article class="surface-card p-4 lg:p-6">
     <div class="mb-3 flex items-center justify-between gap-3">
       <div>
         <h2 class="text-base font-black text-slate-900">So'nggi tarix</h2>
@@ -217,8 +217,8 @@
 
 </section>
 
-<section class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[1.1fr_minmax(0,1fr)_minmax(0,1fr)]">
-  <article class="surface-card p-4">
+<section class="mt-5 grid grid-cols-1 gap-4 lg:gap-5 xl:grid-cols-[1.15fr_minmax(0,1fr)_minmax(0,1fr)]">
+  <article class="surface-card p-4 lg:p-6">
     <div class="mb-3 flex items-center justify-between gap-3">
       <div>
         <h2 class="text-base font-black text-slate-900">Oxirgi sut yozuvlari</h2>
@@ -254,7 +254,7 @@
     </div>
   </article>
 
-  <article class="surface-card p-4">
+  <article class="surface-card p-4 lg:p-6">
     <div class="mb-3 flex items-center justify-between gap-3">
       <div>
         <h2 class="text-base font-black text-slate-900">Oxirgi kirim va chiqimlar</h2>
@@ -284,7 +284,7 @@
     </div>
   </article>
 
-  <article class="surface-card p-4">
+  <article class="surface-card p-4 lg:p-6">
     <div class="mb-3 flex items-center justify-between gap-3">
       <div>
         <h2 class="text-base font-black text-slate-900">Xodimlar qisqa holati</h2>

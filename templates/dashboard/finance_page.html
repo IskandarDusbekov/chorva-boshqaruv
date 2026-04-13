@@ -19,30 +19,30 @@
 {% endblock %}
 
 {% block content %}
-<section class="grid grid-cols-2 gap-3 xl:grid-cols-4">
-  <article class="stats-card p-4">
+<section class="grid grid-cols-2 gap-3 lg:gap-5 xl:grid-cols-4">
+  <article class="stats-card p-4 lg:p-6">
     <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Jami kirim</div>
-    <div class="mt-2 text-xl font-black text-emerald-700 break-all">{{ overview.income_totals.UZS|floatformat:0|intcomma }} UZS</div>
-    <div class="mt-1 text-sm font-bold text-emerald-500 break-all">{{ overview.income_totals.USD|floatformat:2|intcomma }} USD</div>
+    <div class="mt-2 text-xl font-black text-emerald-700 break-all lg:text-[2rem]">{{ overview.income_totals.UZS|floatformat:0|intcomma }} UZS</div>
+    <div class="mt-2 text-sm font-bold text-emerald-500 break-all lg:text-base">{{ overview.income_totals.USD|floatformat:2|intcomma }} USD</div>
   </article>
-  <article class="stats-card p-4">
+  <article class="stats-card p-4 lg:p-6">
     <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Jami chiqim</div>
-    <div class="mt-2 text-xl font-black text-rose-700 break-all">{{ overview.expense_totals.UZS|floatformat:0|intcomma }} UZS</div>
-    <div class="mt-1 text-sm font-bold text-rose-500 break-all">{{ overview.expense_totals.USD|floatformat:2|intcomma }} USD</div>
+    <div class="mt-2 text-xl font-black text-rose-700 break-all lg:text-[2rem]">{{ overview.expense_totals.UZS|floatformat:0|intcomma }} UZS</div>
+    <div class="mt-2 text-sm font-bold text-rose-500 break-all lg:text-base">{{ overview.expense_totals.USD|floatformat:2|intcomma }} USD</div>
   </article>
-  <article class="stats-card p-4">
-    <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Ichki balans</div>
-    <div class="mt-2 text-xl font-black text-indigo-700 break-all">{{ overview.internal_balance.UZS|floatformat:0|intcomma }} UZS</div>
-    <div class="mt-1 text-sm font-bold text-indigo-500 break-all">{{ overview.internal_balance.USD|floatformat:2|intcomma }} USD</div>
+  <article class="stats-card theme-internal p-4 lg:p-6">
+    <div class="theme-label text-[11px] font-semibold uppercase tracking-wide">Ichki balans</div>
+    <div class="theme-value mt-2 text-xl font-black break-all lg:text-[2rem]">{{ overview.internal_balance.UZS|floatformat:0|intcomma }} UZS</div>
+    <div class="theme-subvalue mt-2 text-sm font-bold break-all lg:text-base">{{ overview.internal_balance.USD|floatformat:2|intcomma }} USD</div>
   </article>
-  <article class="stats-card p-4">
-    <div class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Tashqi balans</div>
-    <div class="mt-2 text-xl font-black text-amber-700 break-all">{{ overview.external_balance.UZS|floatformat:0|intcomma }} UZS</div>
-    <div class="mt-1 text-sm font-bold text-amber-500 break-all">{{ overview.external_balance.USD|floatformat:2|intcomma }} USD</div>
+  <article class="stats-card theme-external p-4 lg:p-6">
+    <div class="theme-label text-[11px] font-semibold uppercase tracking-wide">Tashqi balans</div>
+    <div class="theme-value mt-2 text-xl font-black break-all lg:text-[2rem]">{{ overview.external_balance.UZS|floatformat:0|intcomma }} UZS</div>
+    <div class="theme-subvalue mt-2 text-sm font-bold break-all lg:text-base">{{ overview.external_balance.USD|floatformat:2|intcomma }} USD</div>
   </article>
 </section>
 
-<section class="surface-card mt-4 p-4">
+<section class="surface-card mt-5 p-4 lg:p-6">
   {% if can_export_finance %}
   <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
     <h2 class="text-base font-black text-slate-900">Moliyaviy hisobot</h2>
@@ -95,7 +95,7 @@
 </section>
 
 {% if can_export_finance %}
-<section class="surface-card mt-4 p-4">
+<section class="surface-card mt-5 p-4 lg:p-6">
   <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
     <h2 class="text-base font-black text-slate-900">Kategoriya bo'yicha rangli jamlanma</h2>
     <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-600">{{ date_from }} - {{ date_to }}</span>
@@ -133,7 +133,7 @@
 </section>
 {% endif %}
 
-<section class="surface-card mt-4 p-4">
+<section class="surface-card mt-5 p-4 lg:p-6">
   <h2 class="mb-4 text-base font-black text-slate-900">Oxirgi kirim va chiqimlar</h2>
   <div class="mobile-table overflow-x-auto">
     <table class="w-full text-sm">

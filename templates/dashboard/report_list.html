@@ -28,7 +28,7 @@
     <div class="bg-white rounded-2xl shadow p-5">
         <h2 class="font-bold text-gray-800 mb-3">Kassalar</h2>
         <div class="space-y-2 text-sm">
-            <div class="flex justify-between rounded-xl bg-indigo-50 px-3 py-2"><span class="text-indigo-700">Ichki</span><strong class="text-indigo-800">{{ overview.internal_balance.UZS|floatformat:0|intcomma }} UZS / {{ overview.internal_balance.USD|floatformat:2|intcomma }} USD</strong></div>
+            <div class="flex justify-between rounded-xl bg-emerald-50 px-3 py-2"><span class="text-emerald-700">Ichki</span><strong class="text-emerald-800">{{ overview.internal_balance.UZS|floatformat:0|intcomma }} UZS / {{ overview.internal_balance.USD|floatformat:2|intcomma }} USD</strong></div>
             <div class="flex justify-between rounded-xl bg-amber-50 px-3 py-2"><span class="text-amber-700">Tashqi</span><strong class="text-amber-800">{{ overview.external_balance.UZS|floatformat:0|intcomma }} UZS / {{ overview.external_balance.USD|floatformat:2|intcomma }} USD</strong></div>
             <div class="flex justify-between rounded-xl bg-gray-50 px-3 py-2"><span class="text-gray-500">Ishchilar</span><strong>{{ overview.worker_count }}</strong></div>
         </div>
